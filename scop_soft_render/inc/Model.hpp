@@ -5,7 +5,7 @@
 
 class Model
 {
-private:
+public:
 	std::vector<Vec3f> verts_;
 	std::vector<std::vector<int> > faces_;
 

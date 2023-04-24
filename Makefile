@@ -14,8 +14,6 @@ C_GOOD		=	"\033[32m"
 SUCCESS		=	$(C_GOOD)SUCCESS$(C_NO)
 OK			=	$(C_OK)OK$(C_NO)
 
-
-
 all			:	$(NAME)
 
 $(NAME)		:	

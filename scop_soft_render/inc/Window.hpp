@@ -7,20 +7,31 @@ struct GLFWwindow;
 namespace Scop
 {
 
-
 	class Window
 	{
 	public:
-		GLFWwindow*		m_pWindow = nullptr;
-		unsigned int	textureID;
+		struct WindowData
+		{
+			unsigned int	width;
+			unsigned int	height;
+			unsigned int	resolution;
+			bool			isClosed;
 
-		std::string		m_title;
-		unsigned int	m_width;
-		unsigned int	m_height;
-		int				resultCode;
+			WindowData(unsigned int	width, unsigned int	height)
+				: width(width)
+				, height(height)
+				, isClosed(false)
+				{}
+		};
+		WindowData			m_data;
+		GLFWwindow*			m_pWindow = nullptr;
+		std::string			m_title;
+		unsigned int		textureID;
+		int					m_resultCode;
 
-		int				init();
-
+		int					init();
+		void				init_callback();
+	
 	public:
 		Window(std::string title, const unsigned int width, const unsigned int height);
 		~Window();
@@ -30,9 +41,14 @@ namespace Scop
 		Window(Window&&) = delete;
 		Window& operator=(const Window&) = delete;
 		Window& operator=(const Window&&) = delete;
-		
-		const int		getResultCode() const;
-		const void		on_update(unsigned char* data) const;
+
+		const void			on_update(const unsigned char* image, const unsigned int image_resolution) const;
+
+		inline const int	getResultCode() const { return m_resultCode; }
+		inline const int	getResolution() const { return m_data.resolution; }
+		inline const bool	getIsClosed() const { return m_data.isClosed; }
+
+
 	};
 
 }

@@ -3,21 +3,17 @@
 
 #include <string>
 
-class MyApp : public Scop::Application
-{
-
-};
-
 int main(int argc, char **argv)
 {
 	const char*	path = "../blender/african_head/african_head.obj";
+	// const char*	path = "../blender/african_head/test.obj";
 	Model*	model = new Model(path);
 
-	MyApp*	scop = new MyApp();
-	int returnCode = scop->start(800, 800, "test");
+	Scop::Application*	scop = new Scop::Application();
+	int returnCode = scop->start(800, 800, "test", model);
 
 	delete scop;
-	delete model;
+	// delete model;
 
 	return returnCode;
 }

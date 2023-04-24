@@ -6,16 +6,36 @@
 namespace Scop
 {
 
+void	glViewportUpdate(const unsigned int width, const unsigned int height)
+{
+	if (width > height)
+	{
+		glViewport((width - height) / 2, 0, height, height);
+	}
+	else
+	{
+		glViewport(0, (height - width) / 2, width, width);
+	}
+}
+
+unsigned int	updateResolution(const unsigned int width, const unsigned int height)
+{
+	return width > height \
+			? height / 100 * 100 == 0 ? 100 : height / 100 * 100 \
+			: width / 100 * 100 == 0 ? 100 :  width / 100 * 100;
+}
+
 Window::Window(std::string title, const unsigned int width, const unsigned int height)
 	: m_title(std::move(title))
-	, m_width(width)
-	, m_height(height)
+	, m_data({ width, height })
 {
-	resultCode = init();
+	m_data.resolution = updateResolution(width, height);
+	m_resultCode = init();
 }
 
 Window::~Window()
 {
+	glfwTerminate();
 }
 
 int Window::init()
@@ -25,20 +45,22 @@ int Window::init()
 		std::cerr << "Can't initialize GLFW!" << std::endl;
 		return -1;
 	}
-	// glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
-	// glfwOpenWindowHint(GLFW_WINDOW_RESIZABLE, GL_FALSE);
 
-	m_pWindow = glfwCreateWindow(m_width, m_height, m_title.c_str(), nullptr, nullptr);
+	m_pWindow = glfwCreateWindow(m_data.width, m_data.height, m_title.c_str(), nullptr, nullptr);
 	if (!m_pWindow)
 	{
-		std::cerr << "Can't initialize window [" << m_title << "] with size " << m_width << "x" << m_height << std::endl;
+		std::cerr << "Can't initialize window [" << m_title << "] with size " << m_data.width << "x" << m_data.height << std::endl;
 		glfwTerminate();
 		return -2;
 	}
 
 	glfwMakeContextCurrent(m_pWindow);
-	std::cout << "Renderer: " << (char*)glGetString(GL_RENDERER) << std::endl;
-	std::cout << "OpenGL version supported: " << (char*)glGetString(GL_VERSION) << std::endl;
+	glViewportUpdate(m_data.width, m_data.height);
+	std::cout << "Vendor: " << reinterpret_cast<const char*>(glGetString(GL_VENDOR)) << std::endl;
+	std::cout << "Renderer: " << reinterpret_cast<const char*>(glGetString(GL_RENDERER)) << std::endl;
+	std::cout << "OpenGL version supported: " << reinterpret_cast<const char*>(glGetString(GL_VERSION)) << std::endl;
+
+	init_callback();
 
 	glGenTextures(1, &textureID);
 	glBindTexture(GL_TEXTURE_2D, textureID);
@@ -51,17 +73,68 @@ int Window::init()
 	return 0;
 }
 
-const int	Window::getResultCode() const 
-{ 
-	return resultCode;
+void	Window::init_callback()
+{
+	glfwSetWindowUserPointer(m_pWindow, &m_data);
+	glfwSetWindowSizeCallback(m_pWindow, 
+		[](GLFWwindow* pWindow, int width, int height)
+		{
+			WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(pWindow));
+			std::cout << "[WindowSizeCallback] Changed size to " << width << "x" << height << std::endl;
+			data.width = width;
+			data.height = height;
+			data.resolution = updateResolution(width, height);
+			glViewportUpdate(width, height);
+		}
+	);
+
+	glfwSetWindowCloseCallback(m_pWindow,
+		[](GLFWwindow* pWindow)
+		{
+			WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(pWindow));
+			std::cout << "[WindowCloseCallback]" << std::endl;
+			data.isClosed = true;
+		}
+	);
+
+	// glfwSetCursorPosCallback(m_pWindow,
+	// 	[](GLFWwindow* pWindow, double x, double y)
+	// 	{
+	// 		std::cout << "[glfwSetCursorPosCallback] " << x << "x" << y << std::endl;
+	// 	}
+	// );
+
+	// glfwSetKeyCallback(m_pWindow,
+	// 	[](GLFWwindow* pWindow, int key, int scancode, int action, int mods)
+	// 	{
+// 			switch (action)
+// 			{
+// 				case GLFW_PRESS:
+// 				{
+// 					std::cout << "[KeyCallback GLFW_PRESS] " << key << std::endl;
+// 					break;
+// 				}
+// 				case GLFW_RELEASE:
+// 				{
+// 					std::cout << "[KeyCallback GLFW_RELEASE] " << key << std::endl;
+// 					break;
+// 				}
+// 				case GLFW_REPEAT:
+// 				{
+// 					std::cout << "[KeyCallback GLFW_REPEAT] " << key << std::endl;
+// 					break;
+// 				}
+// 			}
+	// 	}
+	// );
 }
 
-const void	Window::on_update(unsigned char* data) const
+const void	Window::on_update(const unsigned char* image, const unsigned int image_resolution) const
 {
-	glClearColor(0.33f, 0.33f, 0.33f, 0.f);
+	glClearColor(0.f, 0.f, 0.f, 0.f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_width, m_height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image_resolution, image_resolution, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
 
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, textureID);

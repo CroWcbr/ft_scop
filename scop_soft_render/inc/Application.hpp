@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Model.hpp"
+
 namespace Scop
 {
 
@@ -7,6 +9,10 @@ namespace Scop
 	{
 	private:
 		class Window*	m_pWindow;
+		unsigned char*	image = nullptr;
+		unsigned int	image_size;
+		unsigned int	image_resolution;	//Texture a multiple of 100
+		unsigned int	bytespp = 3;		//RGB
 
 	public:
 		Application();
@@ -17,7 +23,7 @@ namespace Scop
 		Application& operator=(const Application&) = delete;
 		Application& operator=(const Application&&) = delete;
 
-		virtual int start(unsigned int window_width, unsigned int window_height, const char* title);
+		virtual int start(unsigned int window_width, unsigned int window_height, const char* title, Model* model);
 
 	};
 
