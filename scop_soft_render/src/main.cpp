@@ -13,7 +13,7 @@ int main(int argc, char **argv)
 	int returnCode = scop->start(800, 800, "test", model);
 
 	delete scop;
-	// delete model;
+	delete model;
 
 	return returnCode;
 }

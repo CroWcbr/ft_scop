@@ -10,9 +10,12 @@ namespace Scop
 	private:
 		class Window*	m_pWindow;
 		unsigned char*	image = nullptr;
+		int*			zbuffer = nullptr;
 		unsigned int	image_size;
 		unsigned int	image_resolution;	//Texture a multiple of 100
 		unsigned int	bytespp = 3;		//RGB
+
+	const int depth  = 255;
 
 	public:
 		Application();
