@@ -150,4 +150,25 @@ const void	Window::on_update(const unsigned char* image, const unsigned int imag
 	glfwPollEvents();
 }
 
+const void	Window::on_update_test(const unsigned char* image, const unsigned int width, const unsigned int height) const
+{
+	glClearColor(0.f, 0.f, 0.f, 0.f);
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	const unsigned char *ttt = image;
+	for (int i = 0; i < height ; i++)
+	{
+		for (int j = 0; j < width; j++)
+		{
+			glColor3ub(ttt[0],ttt[1], ttt[2]);
+			glBegin(GL_POINTS);
+			glVertex2f(j / (width / 2.f) - 1.0f, i / (height / 2.f)  - 1.0f);
+			glEnd();	
+			ttt += 3;
+		}
+	}
+	glfwSwapBuffers(m_pWindow);
+	glfwPollEvents();
+}
+
 }

@@ -43,7 +43,7 @@ namespace Scop
 		Window& operator=(const Window&&) = delete;
 
 		const void			on_update(const unsigned char* image, const unsigned int image_resolution) const;
-
+		const void			on_update_test(const unsigned char* image, const unsigned int width, const unsigned int height) const;
 		inline const int	getResultCode() const { return m_resultCode; }
 		inline const int	getResolution() const { return m_data.resolution; }
 		inline const bool	getIsClosed() const { return m_data.isClosed; }

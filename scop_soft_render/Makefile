@@ -16,7 +16,10 @@ SRC			=	main.cpp \
 				Model.cpp \
 				Application.cpp \
 				Window.cpp \
-				Input.cpp
+				Input.cpp \
+				Vector.cpp \
+				TGAimage.cpp \
+				FPS.cpp
 
 OBJ			=	$(addprefix $(OBJ_DIR)/, $(SRC:.cpp=.o))
 

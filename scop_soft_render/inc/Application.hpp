@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Model.hpp"
+#include "TGAimage.hpp"
 
 namespace Scop
 {
@@ -8,7 +9,9 @@ namespace Scop
 	class Application
 	{
 	private:
-		class Window*	m_pWindow;
+		class Window*	m_pWindow = nullptr;
+		Model*			model = nullptr;
+		TGAimage*		tga_image = nullptr;
 		unsigned char*	image = nullptr;
 		int*			zbuffer = nullptr;
 		unsigned int	image_size;
@@ -26,7 +29,7 @@ namespace Scop
 		Application& operator=(const Application&) = delete;
 		Application& operator=(const Application&&) = delete;
 
-		virtual int start(unsigned int window_width, unsigned int window_height, const char* title, Model* model);
+		virtual int start(unsigned int window_width, unsigned int window_height, const char* title, const char* path_model_obj, const char* path_texture_tga);
 
 	};
 

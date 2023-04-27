@@ -1,13 +1,12 @@
 #include "Application.hpp"
 #include "Window.hpp"
+#include "FPS.hpp"
+
 
 #include <cstring>
 #include <iostream>
-#include <chrono>
-#include <thread>
 
 #include "Vector.hpp"
-#include "Model.hpp"
 #include <GLFW/glfw3.h>
 
 const unsigned char white[3] = { 255, 255, 255 };
@@ -106,6 +105,12 @@ void drawTriangle(Vec3i t0, Vec3i t1, Vec3i t2, unsigned char* image, int* zbuff
 		{
 			float phi = B.x == A.x ? 1. : (float)(j - A.x) / (float)(B.x - A.x);
 
+// template <> template <> Vec3<int>::Vec3<>(const Vec3<float> &v) : x(int(v.x+.5)), y(int(v.y+.5)), z(int(v.z+.5)) {
+// }
+
+// template <> template <> Vec3<float>::Vec3<>(const Vec3<int> &v) : x(v.x), y(v.y), z(v.z) {
+// }
+
 			Vec3i P = Vec3f(A) + Vec3f(B-A)*phi;
 			int idx = P.x + P.y * image_resolution;
 			if (zbuffer[idx]<P.z) {
@@ -170,13 +175,28 @@ Application::Application()
 
 Application::~Application()
 {
+	delete model;
+	delete tga_image;
 	delete image;
 	delete zbuffer;
 	delete m_pWindow;
 }
 
-int Application::start(unsigned int window_width, unsigned int window_height, const char* title, Model* model)
+int Application::start(unsigned int window_width, unsigned int window_height, const char* title, const char* path_model_obj, const char* path_texture_tga)
 {
+	Model*	model = new Model(path_model_obj);
+	if (model->getResultCode())
+	{
+
+		return model->getResultCode();
+	}
+
+	TGAimage*	tga_image = new TGAimage(path_texture_tga);
+	if (tga_image->getResultCode())
+	{
+		return tga_image->getResultCode();
+	}
+
 	m_pWindow = new Window(title, window_width, window_height);
 	if (m_pWindow->getResultCode())
 	{
@@ -191,9 +211,7 @@ double total_frame_time = 0.0;
 
 	while (!m_pWindow->getIsClosed())
 	{
-//FPS//
-auto start_time = std::chrono::high_resolution_clock::now();
-//FPS//
+		FPS::start();
 
 		if (image_resolution != m_pWindow->getResolution())
 		{
@@ -241,18 +259,29 @@ auto start_time = std::chrono::high_resolution_clock::now();
 		// }
 
 //light
-		
-		for (int i = 0; i < model->faces_.size(); i++) 
+		// std::cout << frame_count << std::endl;
+		for (int i = 0; i < model->getFaces().size(); i++) 
 		{
-			std::vector<int> face = model->faces_[i];
+			// std::cout << "\t\t" << i << std::endl;
+			std::vector<int> face = model->getFaces()[i];
 			Vec3i screen_coords[3];
 			Vec3f world_coords[3];
+			// std::cout << "0000" << std::endl;
 			for (int j = 0; j < 3; j++)
 			{
-				Vec3f v = model->verts_[face[j]];
+				// std::cout << "!!0000" << "\t" << j << std::endl;
+				// std::cout << model->verts_[0].x << std::endl;
+				// std::cout << model->verts_[0].y << std::endl;
+				// std::cout << model->verts_[0].z << std::endl;
+				// std::cout << face[j] << std::endl;
+
+				Vec3f v = model->getVerts()[face[j]];
+				// std::cout << "!!1111" << "\t" << j << std::endl;
 				screen_coords[j] = Vec3i((v.x+1.)*image_resolution/2., (v.y+1.)*image_resolution/2., (v.z+1.)*depth/2.);
+				// std::cout << "!!2222" << "\t" << j << std::endl;
 				world_coords[j]  = v;
 			}
+			// std::cout << "1111" << std::endl;
 			Vec3f n = (world_coords[2] - world_coords[0]) ^ (world_coords[1] - world_coords[0]);
 			n.normalize();
 			float intensity = n * light_dir;
@@ -264,7 +293,7 @@ auto start_time = std::chrono::high_resolution_clock::now();
 				drawTriangle(screen_coords[0], screen_coords[1], screen_coords[2], image, zbuffer, color, image_resolution);
 			}
 		}
-
+		// std::cout << "\t" << frame_count << std::endl;
         // TGAImage zbimage(width, height, TGAImage::GRAYSCALE);
 		// unsigned char *test = new unsigned char[image_size];
 		// memset(test, 0, image_size);
@@ -292,18 +321,12 @@ auto start_time = std::chrono::high_resolution_clock::now();
 
 
 		m_pWindow->on_update(image, image_resolution);
-//FPS//
-auto end_time = std::chrono::high_resolution_clock::now();
-double frame_time = std::chrono::duration<double>(end_time - start_time).count();
-total_frame_time += frame_time;
-frame_count++;
-if (frame_count == NUM_FRAMES_TO_AVERAGE) 
-{
-	double fps = frame_count / total_frame_time;
-	std::cout << "\rFPS: " << fps << std::endl;
-	frame_count = 0;
-	total_frame_time = 0.0;
-}
+		// m_pWindow->on_update_test(tga_image->getTGAimage(), tga_image->getWidth(), tga_image->getHeight());
+
+		FPS::end();
+		FPS::calculate_fps();
+std::chrono::time_point<std::chrono::system_clock> end_time = std::chrono::high_resolution_clock::now();
+
 //FPS//
 	}
 	return 0;
