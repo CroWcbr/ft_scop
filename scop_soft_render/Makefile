@@ -16,7 +16,6 @@ SRC			=	main.cpp \
 				Model.cpp \
 				Application.cpp \
 				Window.cpp \
-				Input.cpp \
 				Vector.cpp \
 				TGAimage.cpp \
 				FPS.cpp

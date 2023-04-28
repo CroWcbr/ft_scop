@@ -21,7 +21,8 @@ Model::Model(const char* filename)
 	else
 	{
 		std::cout << "OK" << std::endl;
-		std::cout << "m_verts:\t" << m_verts.size() << std::endl << "m_faces:\t" << m_faces.size() << std::endl;
+		std::cout << "m_verts:\t" << m_verts.size() << std::endl << "m_uv:\t\t" << m_uv.size() << std::endl;
+		std::cout << "m_norms:\t" << m_norms.size() << std::endl << "m_faces:\t" << m_faces.size() << std::endl;
 	}
 	std::cout << std::endl;
 }
@@ -56,20 +57,42 @@ int	Model::init_model()
 			}
 			m_verts.push_back(v);
 		}
+		else if (!line.compare(0, 3, "vt "))
+		{
+			iss >> trash >> trash;
+			Vec2f v;
+			for (int i = 0; i < 2; i++)
+			{
+				iss >> v.raw[i];
+			}
+			m_uv.push_back(v);
+		}
+		else if (!line.compare(0, 3, "vn "))
+		{
+			iss >> trash >> trash;
+			Vec3f v;
+			for (int i = 0; i < 3; i++)
+			{
+				iss >> v.raw[i];
+			}
+			m_norms.push_back(v);
+		}
 		else if (!line.compare(0, 2, "f "))
 		{
 			std::vector<int> f;
-			int itrash, idx;
+			std::vector<int> uv;
+			std::vector<int> n;
+			int idx1, idx2, idx3;
 			iss >> trash;
-			// std::string test_string;
-			while (iss >> idx >> trash >> itrash >> trash >> itrash)
-			// while(iss >> test_string)
+			while (iss >> idx1 >> trash >> idx2 >> trash >> idx3)
 			{
-				// idx = std::stoi(test_string);
-				idx--;
-				f.push_back(idx);
+				f.push_back(--idx1);
+				uv.push_back(--idx2);
+				n.push_back(--idx3);
 			}
 			m_faces.push_back(f);
+			m_uv_faces.push_back(uv);
+			m_norms_faces.push_back(n);
 		}
 	}
 

@@ -1,12 +1,11 @@
 #include "FPS.hpp"
 #include <iostream>
-#include <thread>
 
 std::chrono::time_point<std::chrono::system_clock>	FPS::start_time;
 std::chrono::time_point<std::chrono::system_clock>	FPS::end_time;
-double	FPS::frame_time;
-int		FPS::frame_count;
-double	FPS::total_frame_time;
+double												FPS::frame_time;
+double												FPS::total_frame_time;
+int													FPS::frame_count;
 
 void	FPS::start()
 {

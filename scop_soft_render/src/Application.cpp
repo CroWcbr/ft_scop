@@ -79,14 +79,14 @@ void testDraw(Vec2i t0, Vec2i t1, Vec2i t2, unsigned char* image, const unsigned
 	// }
 }
 
-void drawTriangle(Vec3i t0, Vec3i t1, Vec3i t2, unsigned char* image, int* zbuffer, const unsigned char *color, unsigned int image_resolution)
+void drawTriangle(Vec3i t0, Vec3i t1, Vec3i t2, Vec2i uv0, Vec2i uv1, Vec2i uv2, unsigned char* image, TGAimage* tga_image, int* zbuffer, const unsigned char *color, unsigned int image_resolution)
 {
 	if (t0.y==t1.y && t0.y==t2.y)
 		return;
 	// sort the vertices, t0, t1, t2 lower-to-upper (bubblesort yay!)
-	if (t0.y > t1.y) std::swap(t0, t1);
-	if (t0.y > t2.y) std::swap(t0, t2);
-	if (t1.y > t2.y) std::swap(t1, t2);
+    if (t0.y > t1.y) { std::swap(t0, t1); std::swap(uv0, uv1); }
+    if (t0.y > t2.y) { std::swap(t0, t2); std::swap(uv0, uv2); }
+    if (t1.y > t2.y) { std::swap(t1, t2); std::swap(uv1, uv2); }
 
 	int		total_height = t2.y - t0.y;
 	for (int i = 0; i < total_height; i++)
@@ -97,9 +97,14 @@ void drawTriangle(Vec3i t0, Vec3i t1, Vec3i t2, unsigned char* image, int* zbuff
         float beta  = (float)(i-(second_half ? t1.y-t0.y : 0))/segment_height; // be careful: with above conditions no division by zero here
         Vec3i A =               t0 + Vec3f(t2-t0)*alpha;
         Vec3i B = second_half ? t1 + Vec3f(t2-t1)*beta : t0 + Vec3f(t1-t0)*beta;
+
+        Vec2i uvA =               uv0 +      (uv2-uv0)*alpha;
+        Vec2i uvB = second_half ? uv1 +      (uv2-uv1)*beta : uv0 +      (uv1-uv0)*beta;
+
 		if (A.x > B.x)
 		{
 			std::swap(A, B);
+			std::swap(uvA, uvB);
 		}
 		for (int j = A.x; j <= B.x; j++)
 		{
@@ -112,10 +117,15 @@ void drawTriangle(Vec3i t0, Vec3i t1, Vec3i t2, unsigned char* image, int* zbuff
 // }
 
 			Vec3i P = Vec3f(A) + Vec3f(B-A)*phi;
+			Vec2i uvP =     uvA +   (uvB-uvA)*phi;
+
 			int idx = P.x + P.y * image_resolution;
-			if (zbuffer[idx]<P.z) {
+			if (zbuffer[idx]<P.z)
+			{
 				zbuffer[idx] = P.z;
-				memcpy(image + ((P.y) * image_resolution + P.x) * 3, color, 3);
+				unsigned char col[3];
+				memcpy(col, &tga_image->getTGAimage()[(uvP.x + uvP.y * tga_image->getWidth()) * 3], 3);
+				memcpy(image + ((P.y) * image_resolution + P.x) * 3, col, 3);
 			}
 			
 		}
@@ -285,12 +295,19 @@ double total_frame_time = 0.0;
 			Vec3f n = (world_coords[2] - world_coords[0]) ^ (world_coords[1] - world_coords[0]);
 			n.normalize();
 			float intensity = n * light_dir;
-
 			if (intensity > 0)
 			{
+				std::vector<int> uv_face = model->getUVFaces()[i];
+				Vec2i uv[3];
+				for (int k = 0; k < 3; k++)
+				{
+					int idx = uv_face[k];
+					uv[k].x = model->getUV()[idx].x * tga_image->getWidth();
+					uv[k].y = model->getUV()[idx].y * tga_image->getHeight();
+				}
 				unsigned char int_color = intensity * 255;
 				unsigned char color[3] = { int_color, int_color, int_color };;
-				drawTriangle(screen_coords[0], screen_coords[1], screen_coords[2], image, zbuffer, color, image_resolution);
+				drawTriangle(screen_coords[0], screen_coords[1], screen_coords[2], uv[0], uv[1], uv[2], image, tga_image, zbuffer, color, image_resolution);
 			}
 		}
 		// std::cout << "\t" << frame_count << std::endl;
@@ -325,9 +342,7 @@ double total_frame_time = 0.0;
 
 		FPS::end();
 		FPS::calculate_fps();
-std::chrono::time_point<std::chrono::system_clock> end_time = std::chrono::high_resolution_clock::now();
 
-//FPS//
 	}
 	return 0;
 }
