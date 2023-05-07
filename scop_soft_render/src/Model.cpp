@@ -21,8 +21,8 @@ Model::Model(const char* filename)
 	else
 	{
 		std::cout << "OK" << std::endl;
-		std::cout << "m_verts:\t" << m_verts.size() << std::endl << "m_uv:\t\t" << m_uv.size() << std::endl;
-		std::cout << "m_norms:\t" << m_norms.size() << std::endl << "m_faces:\t" << m_faces.size() << std::endl;
+		std::cout << "m_verts:\t" << m_v.size() << std::endl << "m_uv:\t\t" << m_vt.size() << std::endl;
+		std::cout << "m_norms:\t" << m_vn.size() << std::endl << "m_faces:\t" << m_f_v.size() << std::endl;
 	}
 	std::cout << std::endl;
 }
@@ -48,61 +48,61 @@ int	Model::init_model()
 		if (!line.compare(0, 2, "v "))
 		{
 			iss >> trash;
-			Vec3f v;
+			Vec3 v;
 			for (int i = 0; i < 3; i++)
 			{
-				iss >> v.raw[i];
-				if (max < abs(v.raw[i]))
-					max = abs(v.raw[i]);
+				iss >> v[i];
+				if (max < abs(v[i]))
+					max = abs(v[i]);
 			}
-			m_verts.push_back(v);
+			m_v.push_back(v);
 		}
 		else if (!line.compare(0, 3, "vt "))
 		{
 			iss >> trash >> trash;
-			Vec2f v;
+			Vec2 vt;
 			for (int i = 0; i < 2; i++)
 			{
-				iss >> v.raw[i];
+				iss >> vt[i];
 			}
-			m_uv.push_back(v);
+			m_vt.push_back(vt);
 		}
 		else if (!line.compare(0, 3, "vn "))
 		{
 			iss >> trash >> trash;
-			Vec3f v;
+			Vec3 vn;
 			for (int i = 0; i < 3; i++)
 			{
-				iss >> v.raw[i];
+				iss >> vn[i];
 			}
-			m_norms.push_back(v);
+			m_vn.push_back(vn);
 		}
 		else if (!line.compare(0, 2, "f "))
 		{
-			std::vector<int> f;
-			std::vector<int> uv;
-			std::vector<int> n;
+			std::vector<int> f_v;
+			std::vector<int> f_vt;
+			std::vector<int> f_vn;
 			int idx1, idx2, idx3;
 			iss >> trash;
 			while (iss >> idx1 >> trash >> idx2 >> trash >> idx3)
 			{
-				f.push_back(--idx1);
-				uv.push_back(--idx2);
-				n.push_back(--idx3);
+				f_v.push_back(--idx1);
+				f_vt.push_back(--idx2);
+				f_vn.push_back(--idx3);
 			}
-			m_faces.push_back(f);
-			m_uv_faces.push_back(uv);
-			m_norms_faces.push_back(n);
+			m_f_v.push_back(f_v);
+			m_f_vt.push_back(f_vt);
+			m_f_vn.push_back(f_vn);
 		}
 	}
 
 	if (max > 1)
 	{
-		for( auto& vec : m_verts)
+		for( auto& vec : m_v)
 		{
-			vec.x /= max;
-			vec.y /= max;
-			vec.z /= max;
+			vec.x() /= max;
+			vec.y() /= max;
+			vec.z() /= max;
 		}
 	}
 	return 0;

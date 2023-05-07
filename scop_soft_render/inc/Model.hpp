@@ -8,12 +8,12 @@ class Model
 public:
 	const char*						m_filename;
 	int								m_resultCode;
-	std::vector<Vec3f>				m_verts;
-	std::vector<Vec2f>				m_uv;
-	std::vector<Vec3f>				m_norms;
-	std::vector<std::vector<int> >	m_faces;
-	std::vector<std::vector<int> >	m_uv_faces;
-	std::vector<std::vector<int> >	m_norms_faces;
+	std::vector<Vec3>			m_v;
+	std::vector<Vec2>			m_vt;
+	std::vector<Vec3>			m_vn;
+	std::vector<std::vector<int> >	m_f_v;
+	std::vector<std::vector<int> >	m_f_vt;
+	std::vector<std::vector<int> >	m_f_vn;
 
 private:
 	int		init_model();
@@ -28,11 +28,11 @@ public:
 	Model(const char* filename);
 	~Model();
 
-	const int										getResultCode() const { return m_resultCode; }
-	const std::vector<Vec3f>&						getVerts() const { return m_verts; }
-	const std::vector<Vec2f>&						getUV() const { return m_uv; }
-	const std::vector<Vec3f>&						getNorms() const { return m_norms; }
-	const std::vector<std::vector<int>>&			getFaces() const { return m_faces; }
-	const std::vector<std::vector<int>>&			getUVFaces() const { return m_uv_faces; }
-	const std::vector<std::vector<int>>&			getNormsFaces() const { return m_norms_faces; }
+	const int									getResultCode() const { return m_resultCode; }
+	const std::vector<Vec3>&					get_v() const { return m_v; }
+	const std::vector<Vec2>&					get_vt() const { return m_vt; }
+	const std::vector<Vec3>&					get_vn() const { return m_vn; }
+	const std::vector<std::vector<int>>&		get_f_v() const { return m_f_v; }
+	const std::vector<std::vector<int>>&		get_f_vt() const { return m_f_vt; }
+	const std::vector<std::vector<int>>&		get_f_vn() const { return m_f_vn; }
 };
