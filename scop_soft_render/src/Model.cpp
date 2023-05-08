@@ -48,7 +48,7 @@ int	Model::init_model()
 		if (!line.compare(0, 2, "v "))
 		{
 			iss >> trash;
-			Vec3 v;
+			Vec3f v;
 			for (int i = 0; i < 3; i++)
 			{
 				iss >> v[i];
@@ -60,7 +60,7 @@ int	Model::init_model()
 		else if (!line.compare(0, 3, "vt "))
 		{
 			iss >> trash >> trash;
-			Vec2 vt;
+			Vec2f vt;
 			for (int i = 0; i < 2; i++)
 			{
 				iss >> vt[i];
@@ -70,7 +70,7 @@ int	Model::init_model()
 		else if (!line.compare(0, 3, "vn "))
 		{
 			iss >> trash >> trash;
-			Vec3 vn;
+			Vec3f vn;
 			for (int i = 0; i < 3; i++)
 			{
 				iss >> vn[i];

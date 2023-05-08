@@ -9,18 +9,19 @@ namespace Scop
 	class Application
 	{
 	private:
-		class Window*	m_pWindow = nullptr;
-		Model*			model = nullptr;
-		TGAimage*		tga_image = nullptr;
-		unsigned char*	image = nullptr;
-		double*			zbuffer = nullptr;
-		unsigned int	image_size = 0;
-		unsigned int	image_resolution = 0;	//Texture a multiple of 100
-		unsigned int	bytespp = 3;			//RGB
+		class Window*		m_pWindow = nullptr;
+		Model*				m_pModel = nullptr;
+		TGAimage*			m_pTga_image = nullptr;
+		unsigned char*		m_pImage = nullptr;
+		double*				m_pZbuffer = nullptr;
+		unsigned int		m_image_size = 0;
+		unsigned int		m_image_resolution = 0;	//Texture a multiple of 100
+		unsigned int		m_bytespp = 3;			//RGB
+		unsigned char*		m_pWhite;
 
 	private:
-		void			draw_point_triangle(Vec3* world_coords);
-		void			draw_line_triange(Vec3* world_coords);
+		void			draw_point_triangle(Vec4f* world_coords);
+		void			draw_line_triange(Vec4f* world_coords);
 		void			line(int x0, int y0, int x1, int y1);
 
 	public:
