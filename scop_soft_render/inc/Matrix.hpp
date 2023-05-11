@@ -2,7 +2,7 @@
 
 #include <cstddef>
 
-#include <Vector.hpp>
+#include "Vector.hpp"
 
 namespace ft
 {
@@ -16,7 +16,8 @@ namespace ft
 		} \
 	} while (false)
 
-	template <size_t M, size_t N, typename T>
+	template <size_t M, size_t N, typename T,
+				typename = std::enable_if_t<std::is_same<T, float>::value>>
 	class Matrix
 	{
 	private:
@@ -74,9 +75,9 @@ namespace ft
 
 		Vector<N, T> operator*(const Vector<M, T>& v) const
 		{
-			std::cout << "!!!!!!!" << std::endl;
-			std::cout << v << std::endl;
-			std::cout << (*this) << std::endl;
+			// std::cout << "!!!!!!!" << std::endl;
+			// std::cout << v << std::endl;
+			// std::cout << (*this) << std::endl;
 			Vector<N, T> result;
 			for (size_t j = 0; j < N; ++j)
 			{
@@ -84,12 +85,12 @@ namespace ft
 				for (size_t i = 0; i < M; ++i)
 				{
 					sum += m_data[j][i] * v[i];
-					std::cout << "\t" << j << " " << i << "\t" << m_data[j][i] << "\t" << v[i] << "\t" <<  sum << std::endl;
+					// std::cout << "\t" << j << " " << i << "\t" << m_data[j][i] << "\t" << v[i] << "\t" <<  sum << std::endl;
 				}
 				result[j] = sum;
 			}
-			std::cout << result << std::endl;
-			std::cout << "?????" << std::endl;
+			// std::cout << result << std::endl;
+			// std::cout << "?????" << std::endl;
 			return result;
 		}
 
@@ -99,18 +100,22 @@ namespace ft
 			os << "[";
 			for (size_type i = 0; i < M; i++)
 			{
-
+				const value_type* row = m[i];
+				os << "\t";
 				for (size_type j = 0; j < N; j++)
 				{
-					os << m[i][j];
-					os << " ";
+					os << row[j];
+					if (j != N - 1)
+					{
+						os << "\t";
+					}
 				}
 				if (i != M - 1)
 				{
 					os << std::endl;
 				}
 			}
-			os << "]";
+			os << "\t]";
 			return os;
 		}
 

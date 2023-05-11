@@ -114,13 +114,13 @@ int Application::start(unsigned int window_width, unsigned int window_height, co
 		Vec4f world_coords[3];
 		for (size_t i = 0; i < m_pModel->get_f_v().size(); ++i)
 		{
-			std::cout << i << std::endl;
+			// std::cout << i << std::endl;
 			std::vector<int> face = m_pModel->get_f_v()[i];
 			for (size_t j = 0; j < 3; j++)
 			{
-				std::cout << m_pModel->get_v()[face[j]] << std::endl;
-				world_coords[j] = ttt * Vec4f(m_pModel->get_v()[face[j]]);
-				std::cout << world_coords[j] << std::endl;
+				// std::cout << m_pModel->get_v()[face[j]] << std::endl;
+				world_coords[j] = ttt * Vec4f(m_pModel->get_v()[face[j]], 1);
+				// std::cout << world_coords[j] << std::endl;
 			}
 			draw_line_triange(world_coords);
 		}

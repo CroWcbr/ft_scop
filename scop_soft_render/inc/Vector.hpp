@@ -5,6 +5,7 @@
 #include <cassert>
 #include <type_traits>
 #include <cstring>
+#include <algorithm>
 
 namespace ft
 {
@@ -19,7 +20,10 @@ namespace ft
 		} \
 	} while (false)
 
-	template <size_t N, typename T>
+	template <size_t N, \
+			typename T, \
+			typename = std::enable_if_t<std::is_same<T, int>::value || std::is_same<T, float>::value>, \
+			typename = std::enable_if_t<(N >= 2 && N <= 4)>>
 	class Vector
 	{
 		private:
@@ -48,36 +52,57 @@ namespace ft
 				*this = copy;
 			}
 
-			template <size_t N2>
-			Vector(const Vector<N2, T>& copy)
-				:  m_data(new value_type[N])
-			{
-				*this = copy;
-			}
-
 			Vector(init_list data)
 				: m_data(new value_type[N])
 			{
 				*this = data;
 			}
 
-			Vector&				operator=(const Vector &copy)
+			template <size_t N2>
+			Vector(const Vector<N2, T>& copy, T a)
+				:  m_data(new value_type[N])
+			{
+				ASSERT_VEC(N == N2 + 1, "wrong use Vector(const Vector<N2, T>& copy, T a)");
+				std::copy(copy.getVector(), copy.getVector() + N2, m_data);
+				m_data[N2] = a;
+			}
+
+			template <size_t N2>
+			Vector(const Vector<N2, T>& copy, T a, T b)
+				:  m_data(new value_type[N])
+			{
+				ASSERT_VEC(N == N2 + 2, "wrong use Vector(const Vector<N2, T>& copy, T a, T b)");
+				std::copy(copy.getVector(), copy.getVector() + N2, m_data);
+				m_data[N2 - 1] = a;
+				m_data[N2] = b;
+			}
+
+			template <typename U>
+			Vector(const Vector<N, U>& copy)
+				:  m_data(new value_type[N])
+			{
+				*this = copy;
+			}
+
+			Vector&				operator=(const Vector& copy)
 			{
 				std::copy(copy.m_data, copy.m_data + N, m_data);
 				return *this;
 			}
 
-			template <size_t N2>
-			Vector&				operator=(const Vector<N2, T>& copy)
+			template <typename U>
+			Vector&				operator=(const Vector<N, U>& copy)
 			{
-				if (N > N2)
+				if (std::is_same<U, float>::value)
 				{
-					std::copy(copy.getVector(), copy.getVector() + N2, m_data);
-					(*this)[3] = 1;
+					std::transform(copy.getVector(), copy.getVector() + N, m_data, 
+							[](U x) { return static_cast<T>(x + 0.5); });
 				}
 				else
 				{
-					std::copy(copy.getVector(), copy.getVector() + N, m_data);
+					std::cout << "2222" << std::endl;
+					std::transform(copy.getVector(), copy.getVector() + N, m_data, 
+							[](U x) { return static_cast<T>(x); });
 				}
 				return *this;
 			}
@@ -94,64 +119,12 @@ namespace ft
 				ASSERT_VEC(index < N, "wrong index in operator []");
 				return m_data[index];
 			}
+
 			const value_type&	operator[](size_type index) const
 			{
 				ASSERT_VEC(index < N, "wrong index in operator []");
 				return m_data[index];
 			}
-
-	// 		template <typename U>
-	// 		Vec(const Vec<N, U>& copy)
-	// 			: m_size(N)
-	// 			, m_vec(new value_type[N])
-	// 		{
-	// std::cout << "Vec(const Vec<N, U>& copy)" << std::endl;
-	// 			*this = copy;
-	// 		}
-
-	// 		template <typename U>
-	// 		Vec	&operator=(const Vec<N, U> &copy)
-	// 		{
-	// std::cout << "Vec	&operator=(const Vec<N, U> &copy)" << std::endl;
-	// 			if (std::is_same_v<T, int> && std::is_same_v<U, float>)
-	// 			{
-	// 				for (size_type i = 0; i < N; ++i)
-	// 				{
-	// 					m_vec[i] = static_cast<int>(copy[i] + 0.5);
-	// 				}
-	// 			}
-	// 			else if (std::is_same_v<T, float> && std::is_same_v<U, int>)
-	// 			{
-	// 				for (size_type i = 0; i < N; ++i)
-	// 				{
-	// 					m_vec[i] = static_cast<float>(copy[i]);
-	// 				}
-	// 			}
-	// 			return *this;
-	// 		}
-
-
-
-			// template <typename U>
-			// Vec<N, U>			operator+(const Vec<N, U> &vec) const
-			// {
-			// 	Vec<N, U> result;
-			// 	for (size_type i = 0; i < m_size; ++i)
-			// 	{
-			// 		result.m_vec[i] = m_vec[i] + vec.m_vec[i];
-			// 	}
-			// 	return result;
-			// }
-
-			// template <typename U>
-			// Vec<N, U>&		operator+=(const Vec<N, U> &vec)
-			// {
-			// 	for (size_type i = 0; i < m_size; i++)
-			// 	{
-			// 		m_vec[i] += vec[i];
-			// 	}
-			// 	return *this;
-			// }
 
 			size_type			getSize() const { return N; }
 			pointer				getVector() const { return m_data; }
