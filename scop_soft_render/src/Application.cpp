@@ -10,6 +10,8 @@
 #include "FPS.hpp"
 #include "Vector.hpp"
 #include "Matrix.hpp"
+#include "Input.hpp"
+#include "Keys.hpp"
 
 const unsigned char white[3] = { 255, 255, 255 };
 const unsigned char red[3]   = { 255, 0, 0 };
@@ -66,13 +68,13 @@ int Application::start(unsigned int window_width, unsigned int window_height, co
 	}
 
 	Mat4 ttt;
-	ttt = {1, 0, 0, 0.2,
+	ttt = {1, 0, 0, 0,
 			0, 1, 0, 0,
 			0, 0, 1, 0,
 			0, 0, 0, 1};
 
 	// double roll_in_radians = -1;
-	// Mat4 rotate_matrix({cos(roll_in_radians), 0, sin(roll_in_radians), 0,
+	// Mat4 ttt({cos(roll_in_radians), 0, sin(roll_in_radians), 0,
 	// 					0, 1, 0, 0,
 	// 					-sin(roll_in_radians), 0, cos(roll_in_radians), 0,
 	// 					0, 0, 0, 1});
@@ -119,14 +121,15 @@ int Application::start(unsigned int window_width, unsigned int window_height, co
 			for (size_t j = 0; j < 3; j++)
 			{
 				// std::cout << m_pModel->get_v()[face[j]] << std::endl;
-				world_coords[j] = ttt * Vec4f(m_pModel->get_v()[face[j]], 1);
+				world_coords[j] = m_camera.get_view_matrix() * Vec4f(m_pModel->get_v()[face[j]], 1);
 				// std::cout << world_coords[j] << std::endl;
 			}
 			draw_line_triange(world_coords);
 		}
 
 		m_pWindow->on_update(m_pImage, m_image_resolution);
-		std::getchar();
+		on_update();
+		// std::getchar();
 		FPS::end();
 		FPS::calculate_fps();
 	}
@@ -188,6 +191,40 @@ void	Application::line(int x0, int y0, int x1, int y1)
 	}
 }
 
+void	Application::on_update()
+{
+	if (Input::IsKeyEvent())
+	{
+		if (Input::IsKeyPressed(KeyCode::KEY_A))
+		{
+			std::cout << "Application KEY_W" << std::endl;
 
+			camera_rotation.y() += 10;
+			m_camera.set_rotation(camera_rotation);
+		}
+		if (Input::IsKeyPressed(KeyCode::KEY_D))
+		{
+			std::cout << "Application KEY_W" << std::endl;
+
+			camera_rotation.y() -= 10;
+			m_camera.set_rotation(camera_rotation);
+		}
+		// if (Input::IsKeyPressed(KeyCode::KEY_Q))
+		// {
+		// 	std::cout << "Application KEY_W" << std::endl;
+
+		// 	camera_rotation.y() += 10;
+		// 	m_camera.set_rotation(camera_rotation);
+		// }
+		// if (Input::IsKeyPressed(KeyCode::KEY_E))
+		// {
+		// 	std::cout << "Application KEY_W" << std::endl;
+
+		// 	camera_rotation.y() += 10;
+		// 	m_camera.set_rotation(camera_rotation);
+		// }	
+		Input::ClearKeyEvent();
+	}
+}
 
 }

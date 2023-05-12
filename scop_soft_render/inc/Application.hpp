@@ -2,6 +2,8 @@
 
 #include "Model.hpp"
 #include "TGAimage.hpp"
+#include "Camera.hpp"
+#include "Vector.hpp"
 
 namespace Scop
 {
@@ -19,11 +21,17 @@ namespace Scop
 		unsigned int		m_bytespp = 3;			//RGB
 		unsigned char*		m_pWhite;
 
+		Vec3f				camera_position = { 0.f, 0.f, 1.f };
+		Vec3f				camera_rotation = { 0.f, 0.f, 0.f };
+		Camera				m_camera{ Vec3f({-5, 0, 0}) };
+
 	private:
 		void			draw_point_triangle(Vec4f* world_coords);
 		void			draw_line_triange(Vec4f* world_coords);
 		void			line(int x0, int y0, int x1, int y1);
 
+		void			on_update();
+	
 	public:
 		Application();
 		~Application();

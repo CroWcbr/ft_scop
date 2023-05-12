@@ -15,9 +15,11 @@ INC_ALL		=	-I$(INC_DIR) \
 SRC			=	main.cpp \
 				Model.cpp \
 				Application.cpp \
+				Camera.cpp \
 				Window.cpp \
 				TGAimage.cpp \
-				FPS.cpp
+				FPS.cpp \
+				Input.cpp
 
 OBJ			=	$(addprefix $(OBJ_DIR)/, $(SRC:.cpp=.o))
 

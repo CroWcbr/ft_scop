@@ -1,6 +1,10 @@
 #pragma once
 
 #include <cstddef>
+#include <type_traits>
+#include <cstring>
+#include <initializer_list>
+#include <algorithm>
 
 #include "Vector.hpp"
 
@@ -49,9 +53,17 @@ namespace ft
 			*this = data;
 		}
 
-		Matrix&				operator=(const Matrix &copy)
+		Matrix&				operator=(const Matrix& copy)
 		{
-			std::copy(copy.m_data, copy.m_data + M * N, m_data);
+			// strange, dont work error: static assertion failed: type is not assignable
+			// std::copy(copy.m_data, copy.m_data + M * N, m_data); 
+			for (size_t i = 0; i < M; i++)
+			{
+				for (size_t j = 0; j < N; j++)
+				{
+					m_data[i][j] = copy[i][j];
+				}
+			}
 			return *this;
 		}
 
@@ -64,37 +76,45 @@ namespace ft
 
 		value_type*			operator[](size_type index)
 		{
-			ASSERT_VEC(index < M, "wrong index in operator []");
-			return m_data[index];
-		}
-		const value_type*	operator[](size_type index) const
-		{
-			ASSERT_VEC(index < M, "wrong index in operator []");
+			ASSERT_MAT(index < M, "wrong index in operator []");
 			return m_data[index];
 		}
 
-		Vector<N, T> operator*(const Vector<M, T>& v) const
+		const value_type*	operator[](size_type index) const
 		{
-			// std::cout << "!!!!!!!" << std::endl;
-			// std::cout << v << std::endl;
-			// std::cout << (*this) << std::endl;
+			ASSERT_MAT(index < M, "wrong index in operator []");
+			return m_data[index];
+		}
+
+		Vector<M, T>		operator*(const Vector<N, T>& v) const
+		{
 			Vector<N, T> result;
-			for (size_t j = 0; j < N; ++j)
+			for (size_t i = 0; i < M; ++i)
 			{
-				T sum = 0;
-				for (size_t i = 0; i < M; ++i)
+				for (size_t j = 0; j < N; ++j)
 				{
-					sum += m_data[j][i] * v[i];
-					// std::cout << "\t" << j << " " << i << "\t" << m_data[j][i] << "\t" << v[i] << "\t" <<  sum << std::endl;
+					result[i] += m_data[i][j] * v[j];
 				}
-				result[j] = sum;
 			}
-			// std::cout << result << std::endl;
-			// std::cout << "?????" << std::endl;
 			return result;
 		}
 
-		
+		Matrix				operator*(const Matrix& mat) const
+		{
+			Matrix	tmp;
+			for (size_type i = 0; i < M; ++i)
+			{
+				for (size_type j = 0; j < N; ++j)
+				{
+					for (size_type k = 0; k < N; ++k)
+					{
+						tmp[i][j] += m_data[i][k] * mat[k][j];
+					}
+				}
+			}
+			return tmp;
+		}
+
 		friend std::ostream& operator<<(std::ostream& os, const Matrix<M, N, T>& m)
 		{
 			os << "[";
@@ -120,6 +140,7 @@ namespace ft
 		}
 
 	};
+
 }
 
 using Mat4 = ft::Matrix<4, 4, float>;

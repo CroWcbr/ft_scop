@@ -1,4 +1,6 @@
 #include "Window.hpp"
+#include "Keys.hpp"
+#include "Input.hpp"
 
 #include <GLFW/glfw3.h>
 #include <iostream>
@@ -97,36 +99,45 @@ void	Window::init_callback()
 		}
 	);
 
+	glfwSetKeyCallback(m_pWindow,
+		[](GLFWwindow* pWindow, int key, int scancode, int action, int mods)
+		{
+			if (key < 0)
+			{
+				std::cout << "unknown key " << key << std::endl;
+				return;
+			}
+			switch (action)
+			{
+				case GLFW_PRESS:
+				{
+					std::cout << "[KeyCallback GLFW_PRESS] " << key << std::endl;
+					Input::PressKey(key);
+					break;
+				}
+				case GLFW_RELEASE:
+				{
+					std::cout << "[KeyCallback GLFW_RELEASE] " << key << std::endl;
+					Input::ReleaseKey(key);
+					break;
+				}
+				case GLFW_REPEAT:
+				{
+					std::cout << "[KeyCallback GLFW_REPEAT] " << key << std::endl;
+					Input::PressKey(key);
+					break;
+				}
+			}
+		}
+
+
 	// glfwSetCursorPosCallback(m_pWindow,
 	// 	[](GLFWwindow* pWindow, double x, double y)
 	// 	{
 	// 		std::cout << "[glfwSetCursorPosCallback] " << x << "x" << y << std::endl;
 	// 	}
 	// );
-
-	// glfwSetKeyCallback(m_pWindow,
-	// 	[](GLFWwindow* pWindow, int key, int scancode, int action, int mods)
-	// 	{
-// 			switch (action)
-// 			{
-// 				case GLFW_PRESS:
-// 				{
-// 					std::cout << "[KeyCallback GLFW_PRESS] " << key << std::endl;
-// 					break;
-// 				}
-// 				case GLFW_RELEASE:
-// 				{
-// 					std::cout << "[KeyCallback GLFW_RELEASE] " << key << std::endl;
-// 					break;
-// 				}
-// 				case GLFW_REPEAT:
-// 				{
-// 					std::cout << "[KeyCallback GLFW_REPEAT] " << key << std::endl;
-// 					break;
-// 				}
-// 			}
-	// 	}
-	// );
+	);
 }
 
 const void	Window::on_update(const unsigned char* image, const unsigned int image_resolution) const
