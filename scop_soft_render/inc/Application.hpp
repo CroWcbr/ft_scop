@@ -15,23 +15,30 @@ namespace Scop
 		Model*				m_pModel = nullptr;
 		TGAimage*			m_pTga_image = nullptr;
 		unsigned char*		m_pImage = nullptr;
-		double*				m_pZbuffer = nullptr;
+		int*				m_pZbuffer = nullptr;
 		unsigned int		m_image_size = 0;
 		unsigned int		m_image_resolution = 0;	//Texture a multiple of 100
 		unsigned int		m_bytespp = 3;			//RGB
-		unsigned char*		m_pWhite;
+		bool				m_redraw = true;
+
+		const unsigned char	m_white[3] = { 255, 255, 255 };
 
 		Vec3f				camera_position = { 0.f, 0.f, 1.f };
 		Vec3f				camera_rotation = { 0.f, 0.f, 0.f };
-		Camera				m_camera{ Vec3f({-5, 0, 0}) };
+		Camera				m_camera{ Vec3f({0, 0, 0}) };
 
 	private:
 		void			draw_point_triangle(Vec4f* world_coords);
 		void			draw_line_triange(Vec4f* world_coords);
-		void			line(int x0, int y0, int x1, int y1);
+		void			line(int x0, int y0, int x1, int y1, const unsigned char* color);
 
 		void			on_update();
-	
+
+		void			draw_line_triange_test(Vec4i* world_coords);
+
+		void			draw_fill_triange_test(Vec4i* screen_coords, unsigned char color[3]);
+
+
 	public:
 		Application();
 		~Application();

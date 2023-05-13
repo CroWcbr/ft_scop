@@ -4,6 +4,7 @@
 #include <cstring>
 #include <iostream>
 #include <cmath>
+#include <limits>
 
 #include "Application.hpp"
 #include "Window.hpp"
@@ -34,10 +35,7 @@ namespace Scop
 {
 
 Application::Application()
-{
-	m_pWhite = new unsigned char[m_bytespp];
-	memset(m_pWhite, 255, m_bytespp);
-}
+{}
 
 Application::~Application()
 {
@@ -45,7 +43,6 @@ Application::~Application()
 	delete m_pTga_image;
 	delete m_pImage;
 	delete m_pZbuffer;
-	delete m_pWhite;
 	delete m_pWindow;
 }
 
@@ -67,39 +64,14 @@ int Application::start(unsigned int window_width, unsigned int window_height, co
 		return m_pWindow->getResultCode();
 	}
 
-	Mat4 ttt;
-	ttt = {1, 0, 0, 0,
-			0, 1, 0, 0,
-			0, 0, 1, 0,
-			0, 0, 0, 1};
+	int k = 0;
 
-	// double roll_in_radians = -1;
-	// Mat4 ttt({cos(roll_in_radians), 0, sin(roll_in_radians), 0,
-	// 					0, 1, 0, 0,
-	// 					-sin(roll_in_radians), 0, cos(roll_in_radians), 0,
-	// 					0, 0, 0, 1});
 
-		// const glm::mat3 rotate_matrix_x(
-		// 	1, 0, 0,
-		// 	0, cos(roll_in_radians), sin(roll_in_radians),
-		// 	0, -sin(roll_in_radians), cos(roll_in_radians)
-		// );
-
-		// const glm::mat3 rotate_matrix_y(
-		// 	cos(pitch_in_radians), 0, -sin(pitch_in_radians),
-		// 	0, 1, 0,
-		// 	sin(pitch_in_radians), 0, cos(pitch_in_radians)
-		// 	);
-
-		// const glm::mat3 rotate_matrix_z(
-		// 	cos(yaw_in_radians), sin(yaw_in_radians), 0,
-		// 	-sin(yaw_in_radians), cos(yaw_in_radians), 0,
-		// 	0, 0, 1
-		// 	);
 
 	while (!m_pWindow->getIsClosed())
 	{
 		FPS::start();
+		// std::cout << k++ << std::endl;
 
 		if (m_image_resolution != m_pWindow->getResolution())
 		{
@@ -108,32 +80,110 @@ int Application::start(unsigned int window_width, unsigned int window_height, co
 			m_image_resolution = m_pWindow->getResolution();
 			m_image_size = m_image_resolution * m_image_resolution * m_bytespp;
 			m_pImage = new unsigned char[m_image_size];
-			m_pZbuffer = new double[m_image_resolution * m_image_resolution];
+			m_pZbuffer = new int[m_image_resolution * m_image_resolution];
+			m_redraw = true;
 		}
-		memset(m_pImage, 0, m_image_size);
-		memset(m_pZbuffer, std::numeric_limits<int>::min(), m_image_resolution * m_image_resolution * sizeof(int));
 
-		Vec4f world_coords[3];
-		for (size_t i = 0; i < m_pModel->get_f_v().size(); ++i)
+		// if (m_redraw)
 		{
-			// std::cout << i << std::endl;
-			std::vector<int> face = m_pModel->get_f_v()[i];
-			for (size_t j = 0; j < 3; j++)
+			memset(m_pImage, 0, m_image_size);
+			std::fill_n(m_pZbuffer, m_image_resolution * m_image_resolution, std::numeric_limits<int>::min());
+
+			Mat4 view = m_camera.get_view_matrix();
+
+			Mat4 translate_matrix = {
+					1, 0, 0, 1,
+					0, 1, 0, 1,
+					0, 0, 1, 1,
+					0, 0, 0, 1};
+			int depth = 255;
+			Mat4 scale_matrix = {
+					m_image_resolution / 2.f, 0, 0, 0,
+					0, m_image_resolution / 2.f, 0, 0,
+					0, 0, depth / 2.f, 0,
+					0, 0, 0, 1};
+
+			Mat4 LookAt = scale_matrix * translate_matrix;
+
+			Vec3f world_coords[3];
+			Vec4i screen_coords[3];
+			Vec3f light_dir = {0, 0, -1};
+			for (size_t i = 0; i < m_pModel->get_f_v().size(); ++i)
 			{
-				// std::cout << m_pModel->get_v()[face[j]] << std::endl;
-				world_coords[j] = m_camera.get_view_matrix() * Vec4f(m_pModel->get_v()[face[j]], 1);
-				// std::cout << world_coords[j] << std::endl;
+				std::cout << i << "\t";
+				std::vector<int> face = m_pModel->get_f_v()[i];
+				for (size_t j = 0; j < 3; j++)
+				{
+					// std::cout << m_pModel->get_v()[face[j]] << std::endl;
+					// world_coords[j] = view * Vec4f(m_pModel->get_v()[face[j]], 1);
+
+					world_coords[j] = m_pModel->get_v()[face[j]];
+					screen_coords[j] = LookAt * view * Vec4f(world_coords[j], 1.f);
+					// std::cout << world_coords[j] << std::endl;
+				}
+				// draw_line_triange_test(screen_coords);
+				Vec3f n = (world_coords[2]-world_coords[0])^(world_coords[1]-world_coords[0]);
+				n.normalize();
+				float intensity = n * light_dir;
+
+				std::cout << intensity << std::endl;
+				if (intensity > 0) 
+				{
+					unsigned char col = static_cast<unsigned char>(intensity * 255);
+					unsigned char color[3] =  {col, col, col};
+					draw_fill_triange_test(screen_coords, color);
+				}
+
+				// unsigned char color[3] =  {rand()%255, rand()%255, rand()%255};
+				// draw_fill_triange_test(screen_coords, color);
 			}
-			draw_line_triange(world_coords);
+			m_redraw = false;
 		}
 
 		m_pWindow->on_update(m_pImage, m_image_resolution);
 		on_update();
-		// std::getchar();
+		std::getchar();
 		FPS::end();
 		FPS::calculate_fps();
 	}
 	return 0;
+}
+
+void	Application::draw_fill_triange_test(Vec4i* screen_coords, unsigned char color[3])
+{
+	Vec3i t0 = {screen_coords[0].x(), screen_coords[0].y(), screen_coords[0].z()};
+	Vec3i t1 = {screen_coords[1].x(), screen_coords[1].y(), screen_coords[1].z()};
+	Vec3i t2 = {screen_coords[2].x(), screen_coords[2].y(), screen_coords[2].z()};
+
+	if (t0.y()==t1.y() && t0.y()==t2.y()) return; // i dont care about degenerate triangles
+	if (t0.y()>t1.y()) std::swap(t0, t1);
+	if (t0.y()>t2.y()) std::swap(t0, t2);
+	if (t1.y()>t2.y()) std::swap(t1, t2);
+
+	int total_height = t2.y()-t0.y();
+	for (int i=0; i<total_height; i++) {
+		bool second_half = i>t1.y()-t0.y() || t1.y()==t0.y();
+		int segment_height = second_half ? t2.y()-t1.y() : t1.y()-t0.y();
+		float alpha = (float)i/total_height;
+		float beta  = (float)(i-(second_half ? t1.y()-t0.y() : 0))/segment_height; // be careful: with above conditions no division by zero here
+		Vec3i A =               t0 + Vec3f(t2-t0)*alpha;
+		Vec3i B = second_half ? t1 + Vec3f(t2-t1)*beta : t0 + Vec3f(t1-t0)*beta;
+		if (A.x()>B.x()) std::swap(A, B);
+		for (int j=A.x(); j<=B.x(); j++)
+		{
+			float phi = B.x() == A.x() ? 1. : (float)(j-A.x())/(float)(B.x()-A.x());
+			Vec3i P = Vec3f(A) + Vec3f(B-A)*phi;
+			int idx = P.x() + P.y() * m_image_resolution;
+			if (P.x() < 0 || P.y() < 0 || P.x() >= m_image_resolution || P.y() >= m_image_resolution)
+				continue;
+			if (m_pZbuffer[idx] < P.z())
+			{
+				m_pZbuffer[idx] = P.z();
+				memcpy(m_pImage + (P.y() * m_image_resolution + P.x()) * 3, color, 3);
+			}
+		//     image.set(j, t0.y+i, color); // attention, due to int casts t0.y+i != A.y
+		}
+	}
 }
 
 void	Application::draw_point_triangle(Vec4f* world_coords)
@@ -145,9 +195,9 @@ void	Application::draw_point_triangle(Vec4f* world_coords)
 	int x2 = static_cast<int>((world_coords[2].x() + 1.) * m_image_resolution / 2.);
 	int y2 = static_cast<int>((world_coords[2].y() + 1.) * m_image_resolution / 2.);
 	
-	memcpy(m_pImage + static_cast<int>(y0 * m_image_resolution + x0) * m_bytespp, m_pWhite, m_bytespp);
-	memcpy(m_pImage + static_cast<int>(y1 * m_image_resolution + x1) * m_bytespp, m_pWhite, m_bytespp);
-	memcpy(m_pImage + static_cast<int>(y2 * m_image_resolution + x2) * m_bytespp, m_pWhite, m_bytespp);
+	memcpy(m_pImage + static_cast<int>(y0 * m_image_resolution + x0) * m_bytespp, m_white, m_bytespp);
+	memcpy(m_pImage + static_cast<int>(y1 * m_image_resolution + x1) * m_bytespp, m_white, m_bytespp);
+	memcpy(m_pImage + static_cast<int>(y2 * m_image_resolution + x2) * m_bytespp, m_white, m_bytespp);
 }
 
 void	Application::draw_line_triange(Vec4f* world_coords)
@@ -159,13 +209,33 @@ void	Application::draw_line_triange(Vec4f* world_coords)
 	int x2 = static_cast<int>((world_coords[2].x() + 1.) * m_image_resolution / 2.);
 	int y2 = static_cast<int>((world_coords[2].y() + 1.) * m_image_resolution / 2.);
 
-	line(x0, y0, x1, y1);
-	line(x1, y1, x2, y2);
-	line(x2, y2, x0, y0);
+	line(x0, y0, x1, y1, m_white);
+	line(x1, y1, x2, y2, m_white);
+	line(x2, y2, x0, y0, m_white);
 }
 
-void	Application::line(int x0, int y0, int x1, int y1)
+void	Application::draw_line_triange_test(Vec4i* screen_coords)
 {
+	int x0 = screen_coords[0].x();
+	int y0 = screen_coords[0].y();
+	int x1 = screen_coords[1].x();
+	int y1 = screen_coords[1].y();
+	int x2 = screen_coords[2].x();
+	int y2 = screen_coords[2].y();
+
+	line(x0, y0, x1, y1, m_white);
+	line(x1, y1, x2, y2, m_white);
+	line(x2, y2, x0, y0, m_white);
+}
+
+void	Application::line(int x0, int y0, int x1, int y1, const unsigned char* color)
+{
+	if ((x0 < 0 && x1 < 0) || \
+		(x0 >= m_image_resolution && x1 >= m_image_resolution) || \
+		(y0 < 0 && y1 < 0) || \
+		(y0 >= m_image_resolution && y1 >= m_image_resolution))
+		return;
+
 	int dx = abs(x1 - x0);
 	int dy = abs(y1 - y0);
 	int sx = x0 < x1 ? 1 : -1;
@@ -186,8 +256,8 @@ void	Application::line(int x0, int y0, int x1, int y1)
 			y0 += sy;
 		}
 		if (x0 < 0 || y0 < 0 || x0 >= m_image_resolution || y0 >= m_image_resolution)
-			return;
-		memcpy(m_pImage + static_cast<int>(y0 * m_image_resolution + x0) * m_bytespp, m_pWhite, m_bytespp);
+			continue;
+		memcpy(m_pImage + (y0 * m_image_resolution + x0) * m_bytespp, color, m_bytespp);
 	}
 }
 
@@ -209,13 +279,18 @@ void	Application::on_update()
 			camera_rotation.y() -= 10;
 			m_camera.set_rotation(camera_rotation);
 		}
-		// if (Input::IsKeyPressed(KeyCode::KEY_Q))
-		// {
-		// 	std::cout << "Application KEY_W" << std::endl;
-
-		// 	camera_rotation.y() += 10;
-		// 	m_camera.set_rotation(camera_rotation);
-		// }
+		if (Input::IsKeyPressed(KeyCode::KEY_J))
+		{
+			std::cout << "Application KEY_J" << std::endl;
+			camera_position.x() += 0.1;
+			m_camera.set_position(camera_position);
+		}
+		if (Input::IsKeyPressed(KeyCode::KEY_L))
+		{
+			std::cout << "Application KEY_L" << std::endl;
+			camera_position.x() -= 0.1;
+			m_camera.set_position(camera_position);
+		}
 		// if (Input::IsKeyPressed(KeyCode::KEY_E))
 		// {
 		// 	std::cout << "Application KEY_W" << std::endl;
@@ -224,6 +299,7 @@ void	Application::on_update()
 		// 	m_camera.set_rotation(camera_rotation);
 		// }	
 		Input::ClearKeyEvent();
+		m_redraw = true;
 	}
 }
 

@@ -6,6 +6,7 @@
 #include <type_traits>
 #include <cstring>
 #include <algorithm>
+#include <cmath>
 
 namespace ft
 {
@@ -100,7 +101,6 @@ namespace ft
 				}
 				else
 				{
-					std::cout << "2222" << std::endl;
 					std::transform(copy.getVector(), copy.getVector() + N, m_data, 
 							[](U x) { return static_cast<T>(x); });
 				}
@@ -124,6 +124,72 @@ namespace ft
 			{
 				ASSERT_VEC(index < N, "wrong index in operator []");
 				return m_data[index];
+			}
+
+			Vector				operator+(const Vector& vec) const
+			{
+				Vector result(*this);
+				return result += vec;
+			}
+
+			Vector&				operator+=(const Vector& vec)
+			{
+				std::transform(m_data, m_data + N, vec.m_data, m_data, std::plus<value_type>());
+				return *this;
+			}
+
+			Vector				operator-(const Vector& vec) const
+			{
+				Vector result(*this);
+				return result -= vec;
+			}
+
+			Vector&				operator-=(const Vector& vec)
+			{
+				std::transform(m_data, m_data + N, vec.m_data, m_data, std::minus<value_type>());
+				return *this;
+			}
+
+			Vector				operator*(float d) const
+			{
+				Vector result(*this);
+				return result *= d;
+			}
+
+			Vector&				operator*=(float d)
+			{
+				std::transform(m_data, m_data + N, m_data, [d](value_type x) { return x * d; });
+				return *this;
+			}
+
+			value_type			operator*(const Vector& vec) const
+			{
+				value_type result = 0;
+				for (size_type i = 0; i < N; ++i)
+					result += m_data[i] * vec[i];
+				return result;
+			}
+
+			Vector			operator^(const Vector &v) const
+			{
+				ASSERT_VEC(N == 3, "wrong use operator^");
+				return Vector({y() * v.z() - z() * v.y(), z() * v.x() - x() * v.z(), x() * v.y() - y() * v.x()});
+			}
+
+			value_type		norm () const
+			{
+				value_type result = 0;
+				for (size_type i = 0; i < N; ++i)
+					result += m_data[i] * m_data[i];
+				return std::sqrt(result);
+			}
+
+			Vector&			normalize()
+			{
+				const float n = norm();
+				if (n > 0)
+					*this = (*this) * ( 1 / n);
+				return *this;
 			}
 
 			size_type			getSize() const { return N; }

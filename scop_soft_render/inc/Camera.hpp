@@ -21,13 +21,14 @@ namespace Scop
 		bool			m_update_view_matrix = false;
 
 		Mat4			m_view_matrix;
+		Mat4			m_projection_matrix;
 
 	private:
 		void	update_view_matrix();
 		void	update_projection_matrix();
 
 	public:
-		Camera(const Vec3f& position = { 0, 0, 0 }, \
+		Camera(const Vec3f& position = { -5, 0, 0 }, \
 			const Vec3f& rotation = { 0, 0, 0 },
 			const ProjectionMode projection_mode = ProjectionMode::Perspective);
 		
@@ -37,7 +38,10 @@ namespace Scop
 		Camera&	operator=(const Camera&&) = delete;
 
 		void			set_rotation(const Vec3f& rotation);
-		const Mat4&		get_view_matrix();
+		void			set_position(const Vec3f& position);
+		const Mat4		get_view_matrix();
+		void			change_projection();
+		
 	};
 
 }
