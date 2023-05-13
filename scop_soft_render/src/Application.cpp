@@ -110,7 +110,7 @@ int Application::start(unsigned int window_width, unsigned int window_height, co
 			Vec3f light_dir = {0, 0, -1};
 			for (size_t i = 0; i < m_pModel->get_f_v().size(); ++i)
 			{
-				std::cout << i << "\t";
+				// std::cout << i << "\t";
 				std::vector<int> face = m_pModel->get_f_v()[i];
 				for (size_t j = 0; j < 3; j++)
 				{
@@ -126,12 +126,20 @@ int Application::start(unsigned int window_width, unsigned int window_height, co
 				n.normalize();
 				float intensity = n * light_dir;
 
-				std::cout << intensity << std::endl;
 				if (intensity > 0) 
 				{
-					unsigned char col = static_cast<unsigned char>(intensity * 255);
-					unsigned char color[3] =  {col, col, col};
-					draw_fill_triange_test(screen_coords, color);
+					Vec2i uv[3];
+					std::vector<int> uv_face = m_pModel->get_f_vt()[i];
+					for (int k=0; k<3; k++)
+					{
+						int idx = uv_face[k];
+						uv[k].x() = m_pModel->get_vt()[idx].x() * m_pTga_image->getWidth();
+						uv[k].y() = m_pModel->get_vt()[idx].y() * m_pTga_image->getHeight();
+					}
+					// unsigned char col = static_cast<unsigned char>(intensity * 255);
+					// unsigned char color[3] =  {col, col, col};
+					// draw_fill_triange_test(screen_coords, color);
+					draw_fill_triange_texture(screen_coords, uv, intensity);
 				}
 
 				// unsigned char color[3] =  {rand()%255, rand()%255, rand()%255};
@@ -182,6 +190,55 @@ void	Application::draw_fill_triange_test(Vec4i* screen_coords, unsigned char col
 				memcpy(m_pImage + (P.y() * m_image_resolution + P.x()) * 3, color, 3);
 			}
 		//     image.set(j, t0.y+i, color); // attention, due to int casts t0.y+i != A.y
+		}
+	}
+}
+
+void	Application::draw_fill_triange_texture(Vec4i* screen_coords, Vec2i* uv, float intensivity)
+{
+	Vec3i t0 = {screen_coords[0].x(), screen_coords[0].y(), screen_coords[0].z()};
+	Vec3i t1 = {screen_coords[1].x(), screen_coords[1].y(), screen_coords[1].z()};
+	Vec3i t2 = {screen_coords[2].x(), screen_coords[2].y(), screen_coords[2].z()};
+	Vec2i uv0 = {uv[0].x(), uv[0].y()};
+	Vec2i uv1 = {uv[1].x(), uv[1].y()};
+	Vec2i uv2 = {uv[2].x(), uv[2].y()};
+
+	if (t0.y()==t1.y() && t0.y()==t2.y()) return; // i dont care about degenerate triangles
+	if (t0.y()>t1.y()) { std::swap(t0, t1); std::swap(uv0, uv1); }
+	if (t0.y()>t2.y()) { std::swap(t0, t2); std::swap(uv0, uv2); }
+	if (t1.y()>t2.y()) { std::swap(t1, t2); std::swap(uv1, uv2); }
+
+	int total_height = t2.y()-t0.y();
+	for (int i=0; i<total_height; i++) {
+		bool second_half = i>t1.y()-t0.y() || t1.y()==t0.y();
+		int segment_height = second_half ? t2.y()-t1.y() : t1.y()-t0.y();
+		float alpha = (float)i/total_height;
+		float beta  = (float)(i-(second_half ? t1.y()-t0.y() : 0))/segment_height; // be careful: with above conditions no division by zero here
+		Vec3i A =               t0 + Vec3f(t2-t0)*alpha;
+		Vec3i B = second_half ? t1 + Vec3f(t2-t1)*beta : t0 + Vec3f(t1-t0)*beta;
+
+		Vec2i uvA =               uv0 +      (uv2-uv0)*alpha;
+		Vec2i uvB = second_half ? uv1 +      (uv2-uv1)*beta : uv0 +      (uv1-uv0)*beta;
+
+
+		if (A.x()>B.x()) { std::swap(A, B); std::swap(uvA, uvB);}
+		for (int j=A.x(); j<=B.x(); j++)
+		{
+			float phi = B.x() == A.x() ? 1. : (float)(j-A.x())/(float)(B.x()-A.x());
+			Vec3i P = Vec3f(A) + Vec3f(B-A)*phi;
+			Vec2i uvP =     uvA +   (uvB-uvA)*phi;
+			int idx = P.x() + P.y() * m_image_resolution;
+			if (P.x() < 0 || P.y() < 0 || P.x() >= m_image_resolution || P.y() >= m_image_resolution)
+				continue;
+			if (m_pZbuffer[idx] < P.z())
+			{
+				m_pZbuffer[idx] = P.z();
+				unsigned char color[3];
+				memcpy(color, &m_pTga_image->getTGAimage()[(int)(uvP.x() + uvP.y() * m_pTga_image->getWidth()) * 3], 3);
+				for (int i = 0; i < 3; ++i)
+					color[i] *= intensivity;
+				memcpy(m_pImage + (P.y() * m_image_resolution + P.x()) * 3, color, 3);
+			}
 		}
 	}
 }

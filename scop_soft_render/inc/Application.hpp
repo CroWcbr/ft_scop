@@ -37,7 +37,7 @@ namespace Scop
 		void			draw_line_triange_test(Vec4i* world_coords);
 
 		void			draw_fill_triange_test(Vec4i* screen_coords, unsigned char color[3]);
-
+		void			draw_fill_triange_texture(Vec4i* screen_coords, Vec2i* uv, float intensivity);
 
 	public:
 		Application();
