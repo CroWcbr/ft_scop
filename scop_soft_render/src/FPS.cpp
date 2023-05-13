@@ -25,7 +25,7 @@ void	FPS::calculate_fps()
 	if (frame_count == NUM_FRAMES_TO_AVERAGE) 
 	{
 		double fps = frame_count / total_frame_time;
-		std::cout << "FPS: " << fps << std::endl;
+		std::cout << "\rFPS: " << fps << std::flush;
 		frame_count = 0;
 		total_frame_time = 0.0;
 	}

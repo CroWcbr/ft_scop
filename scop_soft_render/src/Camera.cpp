@@ -88,11 +88,21 @@ namespace Scop
 		// 		0, 0, -2 / (f - n), (-f - n) / (f - n),
 		// 		0, 0, 0, 1};
 		// }
+
+		if (m_projection_mode == ProjectionMode::Perspective)
+			m_projection_matrix = {
+				1, 0, 0, 0,
+				0, 1, 0, 0,
+				0, 0, 1, 0,
+				0, 0, -1.f / 3.f, 1};
+		else
+		{
 			m_projection_matrix = {
 				1, 0, 0, 0,
 				0, 1, 0, 0,
 				0, 0, 1, 0,
 				0, 0, 0, 1};
+		}
 	}
 
 	void	Camera::set_rotation(const Vec3f& rotation)
@@ -113,7 +123,7 @@ namespace Scop
 		{
 			update_view_matrix();
 		}
-		return m_projection_matrix * m_view_matrix; 
+		return  m_projection_matrix * m_view_matrix;
 	}
 
 	void	Camera::change_projection()

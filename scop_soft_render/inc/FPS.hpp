@@ -5,7 +5,7 @@
 class FPS
 {
 private:
-	static const int NUM_FRAMES_TO_AVERAGE = 100;
+	static const int NUM_FRAMES_TO_AVERAGE = 10;
 	static std::chrono::time_point<std::chrono::system_clock>	start_time;
 	static std::chrono::time_point<std::chrono::system_clock>	end_time;
 	static double												frame_time;
