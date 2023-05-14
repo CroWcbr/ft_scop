@@ -162,6 +162,19 @@ namespace ft
 				return *this;
 			}
 
+			Vector				operator/(float d) const
+			{
+				Vector result(*this);
+				return result /= d;
+			}
+
+			Vector&				operator/=(float d)
+			{
+				ASSERT_VEC(d != 0, "wrong use operator/ - zero division");
+				std::transform(m_data, m_data + N, m_data, [d](value_type x) { return x / d; });
+				return *this;
+			}
+
 			value_type			operator*(const Vector& vec) const
 			{
 				value_type result = 0;
