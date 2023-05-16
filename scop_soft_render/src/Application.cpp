@@ -98,7 +98,7 @@ int Application::start(unsigned int window_width, unsigned int window_height, co
 	{
 		return m_pWindow->getResultCode();
 	}
-	m_pShader = new Shader_only_vertex(*m_pModel);
+	m_pShader = new Shader_only_vertex(*m_pModel, m_camera);
 	m_pDrawFunction = &Application::draw_model_in_point;
 
 	while (!m_pWindow->getIsClosed())
@@ -114,6 +114,7 @@ int Application::start(unsigned int window_width, unsigned int window_height, co
 			m_pImage = new unsigned char[m_image_size];
 			m_pZbuffer = new int[m_image_resolution * m_image_resolution];
 			m_redraw = true;
+			m_camera.change_viewport_matrix(m_image_resolution);
 		}
 
 		if (m_redraw)
@@ -123,18 +124,22 @@ int Application::start(unsigned int window_width, unsigned int window_height, co
 
 			for (size_t i = 0; i < m_pModel->get_f_v().size(); ++i)
 			{
+				// std:: cout << i << std::endl;
 				for (int j : {0,1,2})
 				{
+					// std:: cout << "\t" << j << "\t";
 					m_pShader->vertex(i, j);
 				}
 				(this->*m_pDrawFunction)();
 			}
+			m_redraw = false;
 		}
 
 		m_pWindow->on_update(m_pImage, m_image_resolution);
 		on_update();
 		FPS::end();
 		FPS::calculate_fps();
+		// std::getchar();
 	}
 
 
@@ -575,7 +580,6 @@ int Application::start(unsigned int window_width, unsigned int window_height, co
 // 	line(x2, y2, x0, y0, m_white);
 // }
 
-
 void	Application::draw_model_in_point()
 {
 	for (int i = 0; i < 3; ++i)
@@ -604,7 +608,6 @@ void	Application::draw_model_in_line()
 	line(x1, y1, x2, y2, m_pShader->color);
 	line(x2, y2, x0, y0, m_pShader->color);
 }
-
 
 void	Application::line(int x0, int y0, int x1, int y1, const unsigned char* color)
 {
@@ -637,6 +640,13 @@ void	Application::line(int x0, int y0, int x1, int y1, const unsigned char* colo
 			continue;
 		memcpy(m_pImage + (y0 * m_image_resolution + x0) * m_bytespp, color, m_bytespp);
 	}
+}
+
+void	Application::draw_model_in_simple_triangle()
+{
+	// vec4 pts[3]  = { Viewport*clip_verts[0],    Viewport*clip_verts[1],    Viewport*clip_verts[2]    };  // triangle screen coordinates before persp. division
+	// vec2 pts2[3] = { proj<2>(pts[0]/pts[0][3]), proj<2>(pts[1]/pts[1][3]), proj<2>(pts[2]/pts[2][3]) };  // triangle screen coordinates after  perps. division
+
 }
 
 }

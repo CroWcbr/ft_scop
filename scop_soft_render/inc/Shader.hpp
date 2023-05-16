@@ -2,6 +2,9 @@
 
 #include "Model.hpp"
 #include "Matrix.hpp"
+#include "Camera.hpp"
+
+#include <iostream>
 
 namespace Scop
 {
@@ -9,11 +12,13 @@ namespace Scop
 	struct IShader
 	{
 		const Model		&model;
+		Camera			&camera;
 		Vec4f			view_tri[3];
 		unsigned char	color[3];
 
-		IShader(const Model &m)
+		IShader(const Model &m, Camera &c)
 			: model(m)
+			, camera(c)
 		{};
 
 		virtual ~IShader() {};
@@ -23,25 +28,8 @@ namespace Scop
 
 	struct Shader_only_vertex: public IShader
 	{
-//delete from here
-	Mat4 translate_matrix_shader = {
-			2, 0, 0, 1,
-			0, 2, 0, 1,
-			0, 0, 2, 1,
-			0, 0, 0, 1};
-
-	Mat4 scale_matrix_shader = {
-			800 / 2.f, 0, 0, 0,
-			0, 800 / 2.f, 0, 0,
-			0, 0, 255 / 2.f, 0,
-			0, 0, 0, 1};
-
-	Mat4 LookAt_shader = scale_matrix_shader * translate_matrix_shader;
-/////////////////////////////
-
-
-		Shader_only_vertex(const Model& model)
-			: IShader(model)
+		Shader_only_vertex(const Model& model, Camera &camera)
+			: IShader(model, camera)
 		{
 			color[0] = 255;
 			color[1] = 255;
@@ -51,13 +39,16 @@ namespace Scop
 		virtual void vertex(int i_face, int i_vert)
 		{
 			std::vector<int> face = model.get_f_v()[i_face];
-			view_tri[i_vert] = LookAt_shader * Vec4f(model.get_v()[face[i_vert]], 1.f);
+			// std::cout << Vec4f(model.get_v()[face[i_vert]], 1.f) << "\t";
+			view_tri[i_vert] = camera.get_mvpv_matrix() * Vec4f(model.get_v()[face[i_vert]], 1.f);
+			// std::cout << view_tri[i_vert] << std::endl;
 		}
 
 		virtual void fragment()
-		{
-		}
+		{}
 	};
+
+
 
 }
 

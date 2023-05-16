@@ -79,6 +79,19 @@ int	Model::init_model()
 		}
 		else if (!line.compare(0, 2, "f "))
 		{
+			// std::vector<int> f_v;
+			// std::vector<int> f_vt;
+			// std::vector<int> f_vn;
+			// int idx1, idx2, idx3;
+			// iss >> trash;
+			// while (iss >> idx1 >> idx2 >> idx3)
+			// {
+			// 	f_v.push_back(--idx1);
+			// 	f_v.push_back(--idx2);
+			// 	f_v.push_back(--idx3);
+			// }
+			// m_f_v.push_back(f_v);
+
 			std::vector<int> f_v;
 			std::vector<int> f_vt;
 			std::vector<int> f_vn;

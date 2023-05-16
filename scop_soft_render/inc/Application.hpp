@@ -23,10 +23,12 @@ namespace Scop
 		bool				m_redraw = true;
 		void				(Application::*m_pDrawFunction)() = nullptr;
 
+		Camera				m_camera{ Vec3f({0, 0, 0}) };
+
 	public:
 		void				draw_model_in_point();
 		void				draw_model_in_line();
-
+		void				draw_model_in_simple_triangle();
 
 	protected:
 		void				point(int x, int y, const unsigned char* color);
@@ -42,7 +44,7 @@ namespace Scop
 
 		Vec3f				camera_position = { 0.f, 0.f, 1.f };
 		Vec3f				camera_rotation = { 0.f, 0.f, 0.f };
-		Camera				m_camera{ Vec3f({0, 0, 0}) };
+		
 
 
 	protected:
