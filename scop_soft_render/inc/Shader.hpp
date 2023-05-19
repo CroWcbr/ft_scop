@@ -4,8 +4,6 @@
 #include "Matrix.hpp"
 #include "Camera.hpp"
 
-#include <iostream>
-
 namespace Scop
 {
 
@@ -39,16 +37,32 @@ namespace Scop
 		virtual void vertex(int i_face, int i_vert)
 		{
 			std::vector<int> face = model.get_f_v()[i_face];
-			// std::cout << Vec4f(model.get_v()[face[i_vert]], 1.f) << "\t";
 			view_tri[i_vert] = camera.get_mvpv_matrix() * Vec4f(model.get_v()[face[i_vert]], 1.f);
-			// std::cout << view_tri[i_vert] << std::endl;
 		}
 
 		virtual void fragment()
 		{}
 	};
 
+	struct Shader_rand_color: public IShader
+	{
+		Shader_rand_color(const Model& model, Camera &camera)
+			: IShader(model, camera)
+		{}
 
+		virtual void vertex(int i_face, int i_vert)
+		{
+			std::vector<int> face = model.get_f_v()[i_face];
+			view_tri[i_vert] = camera.get_mvpv_matrix() * Vec4f(model.get_v()[face[i_vert]], 1.f);
+		}
+
+		virtual void fragment()
+		{
+			color[0] = rand() % 255;
+			color[1] = rand() % 255;
+			color[2] = rand() % 255;
+		}
+	};
 
 }
 

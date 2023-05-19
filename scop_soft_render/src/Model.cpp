@@ -6,6 +6,7 @@
 #include <iostream>
 #include <cstring>
 
+
 Model::Model(const char* filename)
 	: m_filename(filename)
 {
@@ -38,8 +39,10 @@ int	Model::init_model()
 		file.close();
 		return 1;
 	}
-	float max = 0;
+	float max_v = 0;
+	float max_f = 0;
 	std::string line;
+	std::vector<std::vector<std::string>> f_tmp;
 	while (!file.eof())
 	{
 		std::getline(file, line);
@@ -52,8 +55,8 @@ int	Model::init_model()
 			for (int i = 0; i < 3; i++)
 			{
 				iss >> v[i];
-				if (max < abs(v[i]))
-					max = abs(v[i]);
+				if (max_v < abs(v[i]))
+					max_v = abs(v[i]);
 			}
 			m_v.push_back(v);
 		}
@@ -79,45 +82,61 @@ int	Model::init_model()
 		}
 		else if (!line.compare(0, 2, "f "))
 		{
-			// std::vector<int> f_v;
-			// std::vector<int> f_vt;
-			// std::vector<int> f_vn;
-			// int idx1, idx2, idx3;
-			// iss >> trash;
-			// while (iss >> idx1 >> idx2 >> idx3)
-			// {
-			// 	f_v.push_back(--idx1);
-			// 	f_v.push_back(--idx2);
-			// 	f_v.push_back(--idx3);
-			// }
-			// m_f_v.push_back(f_v);
-
+			iss >> trash;
 			std::vector<int> f_v;
 			std::vector<int> f_vt;
 			std::vector<int> f_vn;
-			int idx1, idx2, idx3;
-			iss >> trash;
-			while (iss >> idx1 >> trash >> idx2 >> trash >> idx3)
+
+			std::string tmp;
+			std::stringstream ss_line(line.substr(line.find(' ') + 1));
+			std::vector<std::string> split_line;
+			while(std::getline(ss_line, tmp, ' '))
 			{
-				f_v.push_back(--idx1);
-				f_vt.push_back(--idx2);
-				f_vn.push_back(--idx3);
+				split_line.push_back(tmp);
 			}
-			m_f_v.push_back(f_v);
-			m_f_vt.push_back(f_vt);
-			m_f_vn.push_back(f_vn);
+			std::vector<std::string> split_elem;
+			for (auto& elem : split_line)
+			{
+
+				std::stringstream ss_elem(elem);
+				std::vector<int> split_elem;
+				while(std::getline(ss_elem, tmp, '/'))
+				{
+					if (tmp.empty())
+						tmp = "0";
+					split_elem.push_back(std::stoi(tmp) - 1);
+				}
+
+				f_v.push_back(split_elem[0]);
+				if (m_f_vt.size())
+					f_vt.push_back(split_elem[1]);
+				if (m_vn.size())
+					f_vn.push_back(split_elem[2]);
+				if (f_v.size() == 3)
+				{
+					m_f_v.push_back(f_v);
+					f_v[1] = f_v[2];
+					f_v.pop_back();
+				}
+				if (f_vt.size() == 3)
+				{
+					m_f_vt.push_back(f_vt);
+					f_vt[1] = f_vt[2];
+					f_vt.pop_back();
+				}
+				if (f_vn.size() == 3)
+				{
+					m_f_vn.push_back(f_vn);
+					f_vn[1] = f_vn[2];
+					f_vn.pop_back();
+				}
+			}
 		}
 	}
 
-	if (max > 1)
-	{
-		for( auto& vec : m_v)
-		{
-			vec.x() /= max;
-			vec.y() /= max;
-			vec.z() /= max;
-		}
-	}
+	if (max_v > 1)
+		for(auto& vec : m_v)
+			vec /= max_v;
 	return 0;
 }
 

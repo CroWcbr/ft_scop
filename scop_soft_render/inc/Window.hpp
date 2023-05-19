@@ -2,6 +2,8 @@
 
 #include <string>
 
+#include <GLFW/glfw3.h>
+
 struct GLFWwindow;
 
 namespace Scop
@@ -48,6 +50,24 @@ namespace Scop
 		inline const int	getResolution() const { return m_data.resolution; }
 		inline const bool	getIsClosed() const { return m_data.isClosed; }
 
+
+
+
+	// double get_current_cursor_position_x() const
+	// {
+	// 	double x_pos;
+	// 	double y_pos;
+	// 	glfwGetCursorPos(m_pWindow, &x_pos, &y_pos);
+	// 	return x_pos;
+	// }
+
+	// 	double get_current_cursor_position_y() const
+	// {
+	// 	double x_pos;
+	// 	double y_pos;
+	// 	glfwGetCursorPos(m_pWindow, &x_pos, &y_pos);
+	// 	return y_pos;
+	// }
 
 	};
 

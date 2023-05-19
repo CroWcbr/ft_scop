@@ -35,4 +35,8 @@ public:
 	const std::vector<std::vector<int>>&		get_f_v() const { return m_f_v; }
 	const std::vector<std::vector<int>>&		get_f_vt() const { return m_f_vt; }
 	const std::vector<std::vector<int>>&		get_f_vn() const { return m_f_vn; }
+	bool										is_vt() const { return m_vt.size(); }
+	bool										is_vn()const { return m_vn.size(); }
+	bool										is_f_vt() const { return m_f_vt.size(); }
+	bool										is_f_vn()const { return m_f_vn.size(); }
 };

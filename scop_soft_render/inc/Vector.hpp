@@ -150,17 +150,21 @@ namespace ft
 				return *this;
 			}
 
-			Vector				operator*(float d) const
+			Vector<N, float>	operator*(float d) const
 			{
-				Vector result(*this);
-				return result *= d;
+				Vector<N, float> result(*this);
+				for (int i = 0; i < N; ++i)
+				{
+					result[i] = result[i] * d;
+				}
+				return result;
 			}
 
-			Vector&				operator*=(float d)
-			{
-				std::transform(m_data, m_data + N, m_data, [d](value_type x) { return x * d; });
-				return *this;
-			}
+			// Vector&				operator*=(float d)
+			// {
+			// 	std::transform(m_data, m_data + N, m_data, [d](value_type x) { return x * d; });
+			// 	return *this;
+			// }
 
 			Vector				operator/(float d) const
 			{

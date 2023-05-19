@@ -18,57 +18,6 @@
 namespace Scop
 {
 
-// const int depth  = 255;
-// Vec3f light_dir = {1, -1, 1};
-
-// Vec3f eye = {1, 1, 3};
-// Vec3f center = {0, 0, 0};
-
-// Vec4f shader_vertex(int i, int j, Model* m_pModel, Vec3f& varying_intensity, Mat4& z)
-// {
-// 	std::vector<int> face = m_pModel->get_f_v()[i];
-
-// 	Vec4f gl_Vertex = Vec4f(m_pModel->get_v()[face[j]], 1);
-// 	gl_Vertex = z * gl_Vertex;     // transform it to screen coordinates
-// 	varying_intensity[j] = std::max(0.f, m_pModel->get_vn()[face[j]]*light_dir);
-// 	return gl_Vertex;
-// }
-
-// Mat4 viewport(int x, int y, int w, int h) {
-// 	// std::cout << x << "\t" << y << "\t" << w << "\t" << h << std::endl;
-//     Mat4 m = {
-// 					1, 0, 0, 0,
-// 					0, 1, 0, 0,
-// 					0, 0, 1, 0,
-// 					0, 0, 0, 1};
-//     m[0][3] = x+w/2.f;
-//     m[1][3] = y+h/2.f;
-//     m[2][3] = depth/2.f;
-
-//     m[0][0] = w/2.f;
-//     m[1][1] = h/2.f;
-//     m[2][2] = depth/2.f;
-//     return m;
-// }
-
-// Mat4 lookat(Vec3f eye, Vec3f center, Vec3f up) {
-//     Vec3f z = (eye-center).normalize();
-//     Vec3f x = (up^z).normalize();
-//     Vec3f y = (z^x).normalize();
-//     Mat4 res = {
-// 					1, 0, 0, 0,
-// 					0, 1, 0, 0,
-// 					0, 0, 1, 0,
-// 					0, 0, 0, 1};
-//     for (int i=0; i<3; i++) {
-//         res[0][i] = x[i];
-//         res[1][i] = y[i];
-//         res[2][i] = z[i];
-//         res[i][3] = -center[i];
-//     }
-//     return res;
-// }
-
 Application::Application()
 {}
 
@@ -112,12 +61,12 @@ int Application::start(unsigned int window_width, unsigned int window_height, co
 			m_image_resolution = m_pWindow->getResolution();
 			m_image_size = m_image_resolution * m_image_resolution * m_bytespp;
 			m_pImage = new unsigned char[m_image_size];
-			m_pZbuffer = new int[m_image_resolution * m_image_resolution];
+			m_pZbuffer = new float[m_image_resolution * m_image_resolution];
 			m_redraw = true;
 			m_camera.change_viewport_matrix(m_image_resolution);
 		}
 
-		if (m_redraw)
+		// if (m_redraw)
 		{
 			memset(m_pImage, 0, m_image_size);
 			std::fill_n(m_pZbuffer, m_image_resolution * m_image_resolution, std::numeric_limits<int>::min());
@@ -125,7 +74,7 @@ int Application::start(unsigned int window_width, unsigned int window_height, co
 			for (size_t i = 0; i < m_pModel->get_f_v().size(); ++i)
 			{
 				// std:: cout << i << std::endl;
-				for (int j : {0,1,2})
+				for (int j : {0, 1, 2})
 				{
 					// std:: cout << "\t" << j << "\t";
 					m_pShader->vertex(i, j);
@@ -141,7 +90,6 @@ int Application::start(unsigned int window_width, unsigned int window_height, co
 		FPS::calculate_fps();
 		// std::getchar();
 	}
-
 
 	// int k = 0;
 
@@ -272,28 +220,6 @@ int Application::start(unsigned int window_width, unsigned int window_height, co
 	return 0;
 }
 
-// void	Application::triangle()
-// {
-// }
-
-// Vec3f barycentric(Vec2f A, Vec2f B, Vec2f C, Vec2f P) {
-//     Vec3f s[2];
-//     for (int i=2; i--; ) {
-//         s[i][0] = C[i]-A[i];
-//         s[i][1] = B[i]-A[i];
-//         s[i][2] = A[i]-P[i];
-//     }
-//     Vec3f u = s[0] ^ s[1];
-//     if (std::abs(u[2])>1e-2) // dont forget that u[2] is integer. If it is zero then triangle ABC is degenerate
-//         return Vec3f({1.f-(u.x()+u.y())/u.z(), u.y()/u.z(), u.x()/u.z()});
-//     return Vec3f({-1,1,1}); // in this case generate negative coordinates, it will be thrown away by the rasterizator
-// }
-
-// Vec2f	vec4to2(Vec4f vec)
-// {
-// 	return {vec.x(), vec.y()};
-// }
-
 // void shader_fragment(Vec3f& bar, unsigned char* color, Vec3f& varying_intensity)
 // {
 // 	float intensity = varying_intensity * bar;   // interpolate intensity for the current pixel
@@ -319,38 +245,6 @@ int Application::start(unsigned int window_width, unsigned int window_height, co
 // 		color[1] = 155 * intensity;
 // 		color[2] = 0 * intensity;
 // 	}
-// }
-
-// void	Application::triangle_shader(Vec4f* screen_coords, Vec3f& varying_intensity)
-// {
-// 	Vec2f bboxmin( {std::numeric_limits<float>::max(),  std::numeric_limits<float>::max()});
-//     Vec2f bboxmax({-std::numeric_limits<float>::max(), -std::numeric_limits<float>::max()});
-//     for (int i=0; i<3; i++) {
-//         for (int j=0; j<2; j++) {
-//             bboxmin[j] = std::min(bboxmin[j], screen_coords[i][j]/screen_coords[i][3]);
-//             bboxmax[j] = std::max(bboxmax[j], screen_coords[i][j]/screen_coords[i][3]);
-//         }
-//     }
-// 	Vec2i P;
-//     unsigned char color[3];
-//     for (P.x()=bboxmin.x(); P.x()<=bboxmax.x(); P.x()++)
-// 	{
-//         for (P.y()=bboxmin.y(); P.y()<=bboxmax.y(); P.y()++) {
-//             Vec3f c = barycentric(vec4to2(screen_coords[0]/screen_coords[0][3]), vec4to2(screen_coords[1]/screen_coords[1][3]), vec4to2(screen_coords[2]/screen_coords[2][3]), P);
-//             float z = screen_coords[0][2]*c.x() + screen_coords[1][2]*c.y() + screen_coords[2][2]*c.z();
-//             float w = screen_coords[0][3]*c.x() + screen_coords[1][3]*c.y() + screen_coords[2][3]*c.z();
-//             int frag_depth = std::max(0, std::min(255, int(z/w+.5)));
-
-//             if (c.x()<0 || c.y()<0 || c.z()<0 || m_pZbuffer[P.y() * m_image_resolution + P.x()] > frag_depth)
-// 				continue;
-//             // shader_fragment(c, color, varying_intensity);
-// 			shader_fragment_first_modif(c, color, varying_intensity);
-//             // if (!discard) {
-//                 m_pZbuffer[P.x() +  P.y() * m_image_resolution]  = frag_depth;
-// 				memcpy(m_pImage + (P.y() * m_image_resolution + P.x()) * 3, color, 3);
-//             // }
-//         }
-//     }
 // }
 
 // void	Application::draw_fill_triange_texture_test_inten(Vec3i*  screen_coords, float* intensity)
@@ -399,43 +293,6 @@ int Application::start(unsigned int window_width, unsigned int window_height, co
 // 					color[i] = 255 * ityP;
 // 				memcpy(m_pImage + (P.y() * m_image_resolution + P.x()) * 3, color, 3);
 // 			}
-// 		}
-// 	}
-// }
-
-// void	Application::draw_fill_triange_test(Vec4i* screen_coords, unsigned char color[3])
-// {
-// 	Vec3i t0 = {screen_coords[0].x(), screen_coords[0].y(), screen_coords[0].z()};
-// 	Vec3i t1 = {screen_coords[1].x(), screen_coords[1].y(), screen_coords[1].z()};
-// 	Vec3i t2 = {screen_coords[2].x(), screen_coords[2].y(), screen_coords[2].z()};
-
-// 	if (t0.y()==t1.y() && t0.y()==t2.y()) return; // i dont care about degenerate triangles
-// 	if (t0.y()>t1.y()) std::swap(t0, t1);
-// 	if (t0.y()>t2.y()) std::swap(t0, t2);
-// 	if (t1.y()>t2.y()) std::swap(t1, t2);
-
-// 	int total_height = t2.y()-t0.y();
-// 	for (int i=0; i<total_height; i++) {
-// 		bool second_half = i>t1.y()-t0.y() || t1.y()==t0.y();
-// 		int segment_height = second_half ? t2.y()-t1.y() : t1.y()-t0.y();
-// 		float alpha = (float)i/total_height;
-// 		float beta  = (float)(i-(second_half ? t1.y()-t0.y() : 0))/segment_height; // be careful: with above conditions no division by zero here
-// 		Vec3i A =               t0 + Vec3f(t2-t0)*alpha;
-// 		Vec3i B = second_half ? t1 + Vec3f(t2-t1)*beta : t0 + Vec3f(t1-t0)*beta;
-// 		if (A.x()>B.x()) std::swap(A, B);
-// 		for (int j=A.x(); j<=B.x(); j++)
-// 		{
-// 			float phi = B.x() == A.x() ? 1. : (float)(j-A.x())/(float)(B.x()-A.x());
-// 			Vec3i P = Vec3f(A) + Vec3f(B-A)*phi;
-// 			int idx = P.x() + P.y() * m_image_resolution;
-// 			if (P.x() < 0 || P.y() < 0 || P.x() >= m_image_resolution || P.y() >= m_image_resolution)
-// 				continue;
-// 			if (m_pZbuffer[idx] < P.z())
-// 			{
-// 				m_pZbuffer[idx] = P.z();
-// 				memcpy(m_pImage + (P.y() * m_image_resolution + P.x()) * 3, color, 3);
-// 			}
-// 		//     image.set(j, t0.y+i, color); // attention, due to int casts t0.y+i != A.y
 // 		}
 // 	}
 // }
@@ -538,48 +395,6 @@ int Application::start(unsigned int window_width, unsigned int window_height, co
 // 	}
 // }
 
-// void	Application::draw_point_triangle(Vec4f* world_coords)
-// {
-// 	int x0 = static_cast<int>((world_coords[0].x() + 1.) * m_image_resolution / 2.);
-// 	int y0 = static_cast<int>((world_coords[0].y() + 1.) * m_image_resolution / 2.);
-// 	int x1 = static_cast<int>((world_coords[1].x() + 1.) * m_image_resolution / 2.);
-// 	int y1 = static_cast<int>((world_coords[1].y() + 1.) * m_image_resolution / 2.);
-// 	int x2 = static_cast<int>((world_coords[2].x() + 1.) * m_image_resolution / 2.);
-// 	int y2 = static_cast<int>((world_coords[2].y() + 1.) * m_image_resolution / 2.);
-	
-// 	memcpy(m_pImage + static_cast<int>(y0 * m_image_resolution + x0) * m_bytespp, m_white, m_bytespp);
-// 	memcpy(m_pImage + static_cast<int>(y1 * m_image_resolution + x1) * m_bytespp, m_white, m_bytespp);
-// 	memcpy(m_pImage + static_cast<int>(y2 * m_image_resolution + x2) * m_bytespp, m_white, m_bytespp);
-// }
-
-// void	Application::draw_line_triange(Vec4f* world_coords)
-// {
-// 	int x0 = static_cast<int>((world_coords[0].x() + 1.) * m_image_resolution / 2.);
-// 	int y0 = static_cast<int>((world_coords[0].y() + 1.) * m_image_resolution / 2.);
-// 	int x1 = static_cast<int>((world_coords[1].x() + 1.) * m_image_resolution / 2.);
-// 	int y1 = static_cast<int>((world_coords[1].y() + 1.) * m_image_resolution / 2.);
-// 	int x2 = static_cast<int>((world_coords[2].x() + 1.) * m_image_resolution / 2.);
-// 	int y2 = static_cast<int>((world_coords[2].y() + 1.) * m_image_resolution / 2.);
-
-// 	line(x0, y0, x1, y1, m_white);
-// 	line(x1, y1, x2, y2, m_white);
-// 	line(x2, y2, x0, y0, m_white);
-// }
-
-// void	Application::draw_line_triange_test(Vec4i* screen_coords)
-// {
-// 	int x0 = screen_coords[0].x();
-// 	int y0 = screen_coords[0].y();
-// 	int x1 = screen_coords[1].x();
-// 	int y1 = screen_coords[1].y();
-// 	int x2 = screen_coords[2].x();
-// 	int y2 = screen_coords[2].y();
-
-// 	line(x0, y0, x1, y1, m_white);
-// 	line(x1, y1, x2, y2, m_white);
-// 	line(x2, y2, x0, y0, m_white);
-// }
-
 void	Application::draw_model_in_point()
 {
 	for (int i = 0; i < 3; ++i)
@@ -642,11 +457,92 @@ void	Application::line(int x0, int y0, int x1, int y1, const unsigned char* colo
 	}
 }
 
-void	Application::draw_model_in_simple_triangle()
+Vec3f barycentric(const Vec2f A, const Vec2f B, const Vec2f C, const Vec2f P)
 {
-	// vec4 pts[3]  = { Viewport*clip_verts[0],    Viewport*clip_verts[1],    Viewport*clip_verts[2]    };  // triangle screen coordinates before persp. division
-	// vec2 pts2[3] = { proj<2>(pts[0]/pts[0][3]), proj<2>(pts[1]/pts[1][3]), proj<2>(pts[2]/pts[2][3]) };  // triangle screen coordinates after  perps. division
+	Vec3f s[2];
+	for (int i=2; i--; ) {
+		s[i][0] = C[i]-A[i];
+		s[i][1] = B[i]-A[i];
+		s[i][2] = A[i]-P[i];
+	}
+	Vec3f u = s[0] ^ s[1];
+	if (std::abs(u[2]) > 1e-2)
+		return Vec3f({1.f - (u.x() + u.y()) / u.z(), u.y() / u.z(), u.x() / u.z()});
+	return Vec3f({-1,1,1});
+}
 
+// void	Application::draw_model_in_simple_triangle_rand_color()
+// {
+// 	Vec4f* tri = m_pShader->view_tri;
+// 	Vec4f pts[3]  = { tri[0], tri[1], tri[2]};  // triangle screen coordinates before persp. division	
+// 	Vec2f pts2[3] = { {(pts[0]/pts[0][3]).x(), (pts[0]/pts[0][3]).y()}, \
+// 						{(pts[1]/pts[1][3]).x(), (pts[1]/pts[1][3]).y()}, \
+// 						{(pts[2]/pts[2][3]).x(), (pts[2]/pts[2][3]).y()}};
+
+// 	int bboxmin[2] = {static_cast<int>(m_image_resolution - 1), static_cast<int>(m_image_resolution - 1)};
+// 	int bboxmax[2] = {0, 0};
+// 	for (int i=0; i<3; i++)
+// 	{
+// 		for (int j=0; j<2; j++) {
+// 			bboxmin[j] = std::min(bboxmin[j], static_cast<int>(pts2[i][j]));
+// 			bboxmax[j] = std::max(bboxmax[j], static_cast<int>(pts2[i][j]));
+// 		}
+// 	}
+// 	m_pShader->fragment();
+// 	for (int x = std::max(bboxmin[0], 0); x <= std::min(bboxmax[0], static_cast<int>(m_image_resolution-1)); x++)
+// 	{
+// 		for (int y = std::max(bboxmin[1], 0); y <= std::min(bboxmax[1], static_cast<int>(m_image_resolution-1)); y++)
+// 		{
+// 			Vec3f bc_screen = barycentric(pts2[0], pts2[1], pts2[2], {static_cast<float>(x), static_cast<float>(y)});
+// 			Vec3f bc_clip   = {bc_screen.x() / pts[0][3], bc_screen.y() / pts[1][3], bc_screen.z() / pts[2][3]};
+// 			bc_clip = bc_clip / (bc_clip.x() + bc_clip.y() + bc_clip.z());
+// 			float frag_depth = Vec3f{pts[0][2], pts[1][2], pts[2][2]} * bc_clip;
+// 			if (bc_screen.x() < 0 || bc_screen.y() < 0 || bc_screen.z() < 0 || frag_depth < m_pZbuffer[x + y * m_image_resolution])
+// 				continue;
+// 			m_pZbuffer[x + y * m_image_resolution] = frag_depth;
+// 			memcpy(m_pImage + static_cast<int>(y * m_image_resolution + x) * m_bytespp, m_pShader->color, m_bytespp);
+// 		}
+// 	}
+// }
+
+void	Application::draw_model_in_simple_triangle_rand_color()
+{
+	Vec4f* tri = m_pShader->view_tri;
+	Vec4f pts[3] = { tri[0], tri[1], tri[2] };  // triangle screen coordinates before persp. division
+	Vec2f pts2[3] = { {(pts[0] / pts[0][3]).x(), (pts[0] / pts[0][3]).y()},
+					{(pts[1] / pts[1][3]).x(), (pts[1] / pts[1][3]).y()},
+					{(pts[2] / pts[2][3]).x(), (pts[2] / pts[2][3]).y()} };
+
+	// Precompute barycentric coordinates and depth values for each vertex
+	Vec3f bc0 = barycentric(pts2[0], pts2[1], pts2[2], pts2[0]);
+	Vec3f bc1 = barycentric(pts2[0], pts2[1], pts2[2], pts2[1]);
+	Vec3f bc2 = barycentric(pts2[0], pts2[1], pts2[2], pts2[2]);
+
+	int bboxmin[2] = {static_cast<int>(m_image_resolution - 1), static_cast<int>(m_image_resolution - 1)};
+	int bboxmax[2] = {0, 0};
+	for (int i = 0; i < 3; i++)
+	{
+		for (int j = 0; j < 2; j++) {
+			bboxmin[j] = std::min(bboxmin[j], static_cast<int>(pts2[i][j]));
+			bboxmax[j] = std::max(bboxmax[j], static_cast<int>(pts2[i][j]));
+		}
+	}
+	m_pShader->fragment();
+	for (int x = std::max(bboxmin[0], 0); x <= std::min(bboxmax[0], static_cast<int>(m_image_resolution - 1)); x++)
+	{
+		for (int y = std::max(bboxmin[1], 0); y <= std::min(bboxmax[1], static_cast<int>(m_image_resolution - 1)); y++)
+		{
+			float frag_depth = pts[0][2] * bc0.x() + pts[1][2] * bc1.y() + pts[2][2] * bc2.z();
+			if (frag_depth < m_pZbuffer[x + y * m_image_resolution])
+				continue;
+			Vec2f p({static_cast<float>(x), static_cast<float>(y)});
+			Vec3f bc_screen = barycentric(pts2[0], pts2[1], pts2[2], p);
+			if (bc_screen.x() < 0 || bc_screen.y() < 0 || bc_screen.z() < 0)
+				continue;
+			m_pZbuffer[x + y * m_image_resolution] = frag_depth;
+			memcpy(m_pImage + static_cast<int>(y * m_image_resolution + x) * m_bytespp, m_pShader->color, m_bytespp);
+		}
+	}
 }
 
 }

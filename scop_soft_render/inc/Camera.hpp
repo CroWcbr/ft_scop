@@ -45,7 +45,7 @@ namespace Scop
 		Camera(const Vec3f& model_position = { 0, 0, 0 }, \
 			const Vec3f& model_rotation = { 0, 0, 0 },
 			const float model_scale = 1,
-			const Vec3f& view_position = { -5, 0, 0 }, \
+			const Vec3f& view_position = { 0, 0, 0 }, \
 			const Vec3f& view_rotation = { 0, 0, 0 },
 			const ProjectionMode projection_mode = ProjectionMode::Perspective);
 
@@ -62,6 +62,7 @@ namespace Scop
 
 		void			set_model_rotation(const Vec3f& rotation);
 		void			set_model_position(const Vec3f& position);
+		void			set_model_rotation_and_position(const Vec3f& rotation, const Vec3f& position);
 		void			set_model_scale(const float scale);
 		void			set_view_rotation(const Vec3f& rotation);
 		void			set_view_position(const Vec3f& position);

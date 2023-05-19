@@ -1,6 +1,7 @@
 #include "Window.hpp"
 #include "Keys.hpp"
 #include "Input.hpp"
+#include "Vector.hpp"
 
 #include <GLFW/glfw3.h>
 #include <iostream>
@@ -129,15 +130,44 @@ void	Window::init_callback()
 				}
 			}
 		}
+	);
 
-
-	// glfwSetCursorPosCallback(m_pWindow,
-	// 	[](GLFWwindow* pWindow, double x, double y)
+	// glfwSetMouseButtonCallback(m_pWindow,
+	// 	[](GLFWwindow* pWindow, int button, int action, int mods)
 	// 	{
-	// 		std::cout << "[glfwSetCursorPosCallback] " << x << "x" << y << std::endl;
+	// 		double x_pos;
+	// 		double y_pos;
+	// 		glfwGetCursorPos(pWindow, &x_pos, &y_pos);
+	// 		switch (action)
+	// 		{
+	// 			case GLFW_PRESS:
+	// 			{
+	// 				std::cout << "[MouseButtonCallback GLFW_PRESS] " << button << "\t" << x_pos << "\t" << y_pos << std::endl;
+	// 				Input::PressMouseButton(button);
+	// 				Input::SetMousePosition(x_pos, y_pos);
+	// 				break;
+	// 			}
+	// 			case GLFW_RELEASE:
+	// 			{
+	// 				std::cout << "[MouseButtonCallback GLFW_RELEASE] " << button << "\t" << x_pos << "\t" << y_pos << std::endl;
+	// 				Input::ReleaseMouseButton(button);
+	// 				Input::SetMousePosition(x_pos, y_pos);
+	// 				break;
+	// 			}
+	// 		}
 	// 	}
 	// );
-	);
+
+	// glfwSetCursorPosCallback(m_pWindow,
+	// 	[](GLFWwindow* pWindow, double x_pos, double y_pos)
+	// 	{
+	// 		if (Input::IsMouseButtonEvent())
+	// 		{
+	// 			std::cout << "[glfwSetCursorPosCallback] " << x_pos << "x" << y_pos << std::endl;
+	// 			Input::SetMousePosition(x_pos, y_pos);
+	// 		}
+	// 	}
+	// );
 }
 
 const void	Window::on_update(const unsigned char* image, const unsigned int image_resolution) const

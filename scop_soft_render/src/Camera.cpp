@@ -5,6 +5,35 @@
 
 namespace Scop
 {
+	Mat4			update_euler_rotatate_matrix(const Vec3f& rotatate)
+	{
+		const float roll_in_radians = rotatate.x() * (M_PI / 180.0);
+		const float pitch_in_radians = rotatate.y() * (M_PI / 180.0);
+		const float yaw_in_radians = rotatate.z() * (M_PI / 180.0);
+
+		const Mat4 rotate_matrix_x({
+			1, 0, 0, 0,
+			0, std::cos(roll_in_radians), -std::sin(roll_in_radians), 0,
+			0, std::sin(roll_in_radians), std::cos(roll_in_radians), 0,
+			0, 0, 0, 1
+			});
+
+		const Mat4 rotate_matrix_y({
+			std::cos(pitch_in_radians), 0, std::sin(pitch_in_radians), 0,
+			0, 1, 0, 0,
+			-std::sin(pitch_in_radians), 0, std::cos(pitch_in_radians), 0,
+			0, 0, 0, 1
+			});
+
+		Mat4 rotate_matrix_z({
+			std::cos(yaw_in_radians), -std::sin(yaw_in_radians), 0, 0,
+			std::sin(yaw_in_radians), std::cos(yaw_in_radians), 0, 0,
+			0, 0, 1, 0,
+			0, 0, 0, 1
+			});
+
+		return rotate_matrix_z * rotate_matrix_y  * rotate_matrix_x;
+	}
 
 	Camera::Camera(const Vec3f& model_position, \
 			const Vec3f& model_rotation,
@@ -45,7 +74,7 @@ namespace Scop
 			update_view_matrix();
 		}
 		m_update_mvpv_matrix = false;
-		m_mvpv_matrix = get_viewport_matrix() * get_model_matrix();
+		m_mvpv_matrix = get_viewport_matrix() * get_view_matrix() * get_model_matrix();
 	}
 
 	const Mat4&		Camera::get_model_matrix() const
@@ -55,17 +84,26 @@ namespace Scop
 
 	void			Camera::set_model_rotation(const Vec3f& rotation)
 	{
-		m_model_rotation = rotation;
+		m_model_rotation += rotation;
 		m_update_model_matrix = true;
 		m_update_mvpv_matrix = true;
 	}
 	
 	void			Camera::set_model_position(const Vec3f& position)
 	{
-		m_model_position = position;
+		m_model_position += position;
 		m_update_model_matrix = true;
 		m_update_mvpv_matrix = true;
 	}
+
+	void			Camera::set_model_rotation_and_position(const Vec3f& rotation, const Vec3f& position)
+	{
+		m_model_rotation += rotation;
+		m_model_position += position;
+		m_update_model_matrix = true;
+		m_update_mvpv_matrix = true;
+	}
+
 
 	void			Camera::set_model_scale(const float scale)
 	{
@@ -76,43 +114,6 @@ namespace Scop
 
 	void			Camera::update_model_matrix()
 	{
-		const float roll_in_radians = m_model_rotation.x() * (M_PI / 180.0);
-		const float pitch_in_radians = m_model_rotation.y() * (M_PI / 180.0);
-		const float yaw_in_radians = m_model_rotation.z() * (M_PI / 180.0);
-
-		Mat4 translate_matrix2 = {
-				1, 0, 0, m_model_position[0],
-				0, 1, 0, m_model_position[1],
-				0, 0, 1, m_model_position[2],
-				0, 0, 0, 1};
-
-		const Mat4 rotate_matrix_x({
-			1, 0, 0, 0,
-			0, std::cos(roll_in_radians), -std::sin(roll_in_radians), 0,
-			0, std::sin(roll_in_radians), std::cos(roll_in_radians), 0,
-			0, 0, 0, 1
-			});
-
-		const Mat4 rotate_matrix_y({
-			std::cos(pitch_in_radians), 0, std::sin(pitch_in_radians), 0,
-			0, 1, 0, 0,
-			-std::sin(pitch_in_radians), 0, std::cos(pitch_in_radians), 0,
-			0, 0, 0, 1
-			});
-
-		Mat4 rotate_matrix_z({
-			std::cos(yaw_in_radians), -std::sin(yaw_in_radians), 0, 0,
-			std::sin(yaw_in_radians), std::cos(yaw_in_radians), 0, 0,
-			0, 0, 1, 0,
-			0, 0, 0, 1
-			});
-
-		Mat4 translate_matrix = {
-				1, 0, 0, -m_model_position[0],
-				0, 1, 0, -m_model_position[1],
-				0, 0, 1, -m_model_position[2],
-				0, 0, 0, 1};
-
 		Mat4 scale_matrix = {
 				m_model_scale, 0, 0, 0,
 				0, m_model_scale, 0, 0,
@@ -120,9 +121,15 @@ namespace Scop
 				0, 0, 0, 1
 		};
 
-		Mat4 euler_rotate_matrix =  translate_matrix * rotate_matrix_z * rotate_matrix_y  * rotate_matrix_x * scale_matrix * translate_matrix2;
+		Mat4 translate_matrix = {
+				1, 0, 0, m_model_position[0],
+				0, 1, 0, m_model_position[1],
+				0, 0, 1, m_model_position[2],
+				0, 0, 0, 1};
 
-		m_model_matrix = euler_rotate_matrix * translate_matrix;
+		Mat4 rotate_matrix = update_euler_rotatate_matrix(m_model_rotation);
+
+		m_model_matrix =  translate_matrix * scale_matrix * rotate_matrix ;
 		m_update_model_matrix = false;
 	}
 
@@ -133,22 +140,23 @@ namespace Scop
 
 	void			Camera::update_view_matrix()
 	{
-		Mat4 m_view_matrix = {
+		m_view_matrix = {
 				1, 0, 0, 0,
 				0, 1, 0, 0,
 				0, 0, 1, 0,
 				0, 0, 0, 1};
+		m_update_model_matrix = false;
 		m_update_view_matrix = false;
 	}
 
 	void			Camera::set_view_rotation(const Vec3f& rotation)
 	{
-
+		;
 	}
 
 	void			Camera::set_view_position(const Vec3f& position)
 	{
-
+		;
 	}
 
 	const Mat4&		Camera::get_projection_matrix() const
@@ -219,19 +227,21 @@ namespace Scop
 
 	void			Camera::update_viewport_matrix(int size)
 	{
-		Mat4 translate_matrix_model = {
+		Mat4 translate_viewport_matrix= {
 				1, 0, 0, 1,
 				0, 1, 0, 1,
 				0, 0, 1, 1,
 				0, 0, 0, 1};
 
-		Mat4 scale_matrix_model = {
+		Mat4 scale_viewport_matrix = {
 				size / 2.f, 0, 0, 0,
 				0, size / 2.f, 0, 0,
 				0, 0, 1, 0,
 				0, 0, 0, 1};
 
-		m_viewport_matrix = scale_matrix_model * translate_matrix_model;
+		m_viewport_matrix = scale_viewport_matrix * translate_viewport_matrix;
 	}
+
+
 
 }
