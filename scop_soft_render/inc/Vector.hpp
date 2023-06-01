@@ -160,12 +160,6 @@ namespace ft
 				return result;
 			}
 
-			// Vector&				operator*=(float d)
-			// {
-			// 	std::transform(m_data, m_data + N, m_data, [d](value_type x) { return x * d; });
-			// 	return *this;
-			// }
-
 			Vector				operator/(float d) const
 			{
 				Vector result(*this);

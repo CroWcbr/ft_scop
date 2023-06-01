@@ -26,8 +26,6 @@ namespace ft
 	{
 	private:
 		typedef		T									value_type;
-		// typedef		T*									pointer;
-		// typedef		T&									reference;
 		typedef		std::size_t							size_type;
 		typedef		std::initializer_list<value_type>	init_list;
 

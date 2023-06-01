@@ -28,7 +28,6 @@ Model::Model(const char* filename)
 	std::cout << std::endl;
 }
 
-
 int	Model::init_model()
 {
 	std::ifstream file;
