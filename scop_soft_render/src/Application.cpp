@@ -47,8 +47,8 @@ int Application::start(unsigned int window_width, unsigned int window_height, co
 	{
 		return m_pWindow->getResultCode();
 	}
-	m_pShader = new Shader_only_vertex(*m_pModel, m_camera);
-	m_pDrawFunction = &Application::draw_model_in_point;
+	m_pShader = new Shader_test(*m_pModel, *m_pTga_image, m_camera);
+	m_pDrawFunction = &Application::draw_model_test;
 
 	while (!m_pWindow->getIsClosed())
 	{
@@ -68,22 +68,26 @@ int Application::start(unsigned int window_width, unsigned int window_height, co
 
 		if (m_redraw)
 		{
+			m_redraw = false;
 			memset(m_pImage, 0, m_image_size);
-			std::fill_n(m_pZbuffer, m_image_resolution * m_image_resolution, std::numeric_limits<int>::min());
+			std::fill_n(m_pZbuffer, m_image_resolution * m_image_resolution, std::numeric_limits<float>::max());
+			std::fill_n(m_pZbuffer, m_image_resolution * m_image_resolution, std::numeric_limits<float>::min());
 
 			for (size_t i = 0; i < m_pModel->get_f_v().size(); ++i)
 			{
+				// std::cout << "\t" << i << std::endl;
 				for (int j : {0, 1, 2})
 				{
 					m_pShader->vertex(i, j);
 				}
 				(this->*m_pDrawFunction)();
 			}
-			m_redraw = false;
+			m_pWindow->on_update(m_pImage, m_image_resolution);
+			// m_pWindow->on_update(m_pTga_image->getTGAimage(), m_pTga_image->getHeight());
 		}
-
-		m_pWindow->on_update(m_pImage, m_image_resolution);
+		m_pWindow->event();
 		on_update();
+		FPS::delay();
 		FPS::end();
 		FPS::calculate_fps();
 	}
@@ -107,12 +111,12 @@ void	Application::point(int x, int y, const unsigned char* color)
 
 void	Application::draw_model_in_line()
 {
-	int x0 = m_pShader->view_tri[0].x();
-	int y0 = m_pShader->view_tri[0].y();
-	int x1 = m_pShader->view_tri[1].x();
-	int y1 = m_pShader->view_tri[1].y();
-	int x2 = m_pShader->view_tri[2].x();
-	int y2 = m_pShader->view_tri[2].y();
+	int x0 = m_pShader->view_tri[0].x() / m_pShader->view_tri[0].w();
+	int y0 = m_pShader->view_tri[0].y() / m_pShader->view_tri[0].w();
+	int x1 = m_pShader->view_tri[1].x() / m_pShader->view_tri[1].w();
+	int y1 = m_pShader->view_tri[1].y() / m_pShader->view_tri[1].w();
+	int x2 = m_pShader->view_tri[2].x() / m_pShader->view_tri[2].w();
+	int y2 = m_pShader->view_tri[2].y() / m_pShader->view_tri[2].w();
 
 	line(x0, y0, x1, y1, m_pShader->color);
 	line(x1, y1, x2, y2, m_pShader->color);
@@ -127,8 +131,8 @@ void	Application::line(int x0, int y0, int x1, int y1, const unsigned char* colo
 		(y0 >= m_image_resolution && y1 >= m_image_resolution))
 		return;
 
-	int dx = abs(x1 - x0);
-	int dy = abs(y1 - y0);
+	int dx = std::abs(x1 - x0);
+	int dy = std::abs(y1 - y0);
 	int sx = x0 < x1 ? 1 : -1;
 	int sy = y0 < y1 ? 1 : -1;
 	int err = dx - dy;
@@ -152,7 +156,7 @@ void	Application::line(int x0, int y0, int x1, int y1, const unsigned char* colo
 	}
 }
 
-Vec3f barycentric(const Vec2f A, const Vec2f B, const Vec2f C, const Vec2f P)
+Vec3f	barycentric(const Vec2f A, const Vec2f B, const Vec2f C, const Vec2f P)
 {
 	Vec3f s[2];
 	for (int i=2; i--; ) {
@@ -166,9 +170,9 @@ Vec3f barycentric(const Vec2f A, const Vec2f B, const Vec2f C, const Vec2f P)
 	return Vec3f({-1,1,1});
 }
 
-void	Application::draw_model_in_simple_triangle_rand_color()
+void	Application::draw_model_in_simple_triangle_rand_color_barycentric()
 {
-	Vec4f* tri = m_pShader->view_tri;
+	Vec4f* tri = m_pShader->mvpv;
 	Vec4f pts[3] = { tri[0], tri[1], tri[2] };
 	Vec2f pts2[3] = { {(pts[0] / pts[0][3]).x(), (pts[0] / pts[0][3]).y()},
 					{(pts[1] / pts[1][3]).x(), (pts[1] / pts[1][3]).y()},
@@ -197,10 +201,51 @@ void	Application::draw_model_in_simple_triangle_rand_color()
 				continue;
 			Vec2f p({static_cast<float>(x), static_cast<float>(y)});
 			Vec3f bc_screen = barycentric(pts2[0], pts2[1], pts2[2], p);
+
 			if (bc_screen.x() < 0 || bc_screen.y() < 0 || bc_screen.z() < 0)
 				continue;
+			// m_pShader->fragment(bc_screen);
 			m_pZbuffer[x + y * m_image_resolution] = frag_depth;
 			memcpy(m_pImage + static_cast<int>(y * m_image_resolution + x) * m_bytespp, m_pShader->color, m_bytespp);
+		}
+	}
+}
+
+void	Application::draw_model_test()
+{
+	Vec4f* clip_verts = m_pShader->mv;
+	Vec4f* tri = m_pShader->mvpv;
+	Vec4f pts[3] = { tri[0], tri[1], tri[2] };
+	Vec2f pts2[3] = { {pts[0][0]/pts[0][3] , pts[0][1]/pts[0][3]}, \
+						{pts[1][0]/pts[1][3] , pts[1][1]/pts[1][3]},
+						{pts[2][0]/pts[2][3] , pts[2][1]/pts[2][3]}};
+
+	int bboxmin[2] = {static_cast<int>(m_image_resolution - 1), static_cast<int>(m_image_resolution - 1)};
+	int bboxmax[2] = {0, 0};
+	for (int i = 0; i < 3; ++i)
+	{
+		for (int j = 0; j < 2; ++j)
+		{
+			bboxmin[j] = std::min(bboxmin[j], static_cast<int>(pts2[i][j]));
+			bboxmax[j] = std::max(bboxmax[j], static_cast<int>(pts2[i][j]));
+		}
+	}
+
+	for (int x = std::max(bboxmin[0], 0); x <= std::min(bboxmax[0], static_cast<int>(m_image_resolution - 1)); ++x)
+	{
+		for (int y = std::max(bboxmin[1], 0); y <= std::min(bboxmax[1], static_cast<int>(m_image_resolution - 1)); ++y)
+		{
+			Vec3f bc_screen = barycentric(pts2[0], pts2[1], pts2[2], {static_cast<float>(x), static_cast<float>(y)});
+			if (bc_screen.x() < 0 || bc_screen.y() < 0 || bc_screen.z() < 0)
+				continue;
+			Vec3f bc_clip   = {bc_screen.x() / pts[0][3], bc_screen.y() / pts[1][3], bc_screen.z() / pts[2][3]};
+			bc_clip = bc_clip / (bc_clip.x() + bc_clip.y() + bc_clip.z());
+			float frag_depth = Vec3f({clip_verts[0][2], clip_verts[1][2], clip_verts[2][2]}) * bc_clip;
+			if (frag_depth > m_pZbuffer[x + y * m_image_resolution])
+				continue;
+			m_pShader->fragment(bc_clip);
+			m_pZbuffer[x + y * m_image_resolution] = frag_depth;
+			memcpy(m_pImage + (y * m_image_resolution + x) * m_bytespp, m_pShader->color, m_bytespp);
 		}
 	}
 }

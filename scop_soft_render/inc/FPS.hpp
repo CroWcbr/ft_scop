@@ -15,6 +15,7 @@ private:
 public:
 	static void	start();
 	static void	end();
-	static void calculate_fps();
+	static void	calculate_fps();
+	static void	delay();
 
 };

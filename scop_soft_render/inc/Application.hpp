@@ -26,18 +26,18 @@ namespace Scop
 
 		Camera				m_camera{ Vec3f({0, 0, 0}) };
 
-
 	public:
 		void				draw_model_in_point();
 		void				draw_model_in_line();
-		void				draw_model_in_simple_triangle_rand_color();
+		// void				draw_model_in_simple_triangle_rand_color();
+		void				draw_model_in_simple_triangle_rand_color_barycentric();
 
-		void				draw_model_in_triangle_Bresenham_algoritm();
+		void				draw_model_test();
 
 	protected:
 		void				point(int x, int y, const unsigned char* color);
 		void				line(int x0, int y0, int x1, int y1, const unsigned char* color);
-
+		void				line_v2(int x0, int y0, int x1, int y1, const unsigned char* color);
 		virtual void		on_update() {};
 
 	public:

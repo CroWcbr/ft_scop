@@ -41,7 +41,7 @@ bonus		:	$(NAME)
 
 OBJ			=	$(SRC:%.cpp=$(OBJ_DIR)/%.o)
 
-$(OBJ_DIR)/%.o:	$(SRC_DIR)/%.cpp Makefile
+$(OBJ_DIR)/%.o:	$(SRC_DIR)/%.cpp Makefile ${INC_DIR}/*.hpp
 				@mkdir -p $(@D)
 				$(CC) $(CFLAGS) -c -o $@ $< $(INC_ALL)
 

@@ -42,7 +42,7 @@ int main(int argc, char **argv)
 	ApplicationEditor*	scop = new ApplicationEditor();
 	int returnCode = scop->start(800, 800, "test", path_model_obj, path_texture_tga);
 
-	// delete scop;
+	delete scop;
 
-	// return returnCode;
+	return returnCode;
 }

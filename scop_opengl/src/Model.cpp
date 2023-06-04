@@ -50,14 +50,14 @@ int	Model::init_model()
 		if (!line.compare(0, 2, "v "))
 		{
 			iss >> trash;
-			Vec3f v;
+			float v;
 			for (int i = 0; i < 3; i++)
 			{
-				iss >> v[i];
-				if (max_v < abs(v[i]))
-					max_v = abs(v[i]);
+				iss >> v;
+				m_v.push_back(v);
+				if (max_v < abs(v))
+					max_v = abs(v);
 			}
-			m_v.push_back(v);
 		}
 		else if (!line.compare(0, 3, "vt "))
 		{
@@ -113,7 +113,8 @@ int	Model::init_model()
 					f_vn.push_back(split_elem[2]);
 				if (f_v.size() == 3)
 				{
-					m_f_v.push_back(Vec3i({f_v[0], f_v[1], f_v[2]}));
+					for (auto& f : f_v)
+						m_f_v.push_back(f);
 					f_v[1] = f_v[2];
 					f_v.pop_back();
 				}

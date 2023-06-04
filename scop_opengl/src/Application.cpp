@@ -64,29 +64,9 @@ int Application::start(unsigned int window_width, unsigned int window_height, co
 		return m_pShader->getResultCode();
 	}
 
-std::vector<float> vertices;
-for (auto& a : m_pModel->m_v)
-{
-	vertices.push_back(a[0]);
-	vertices.push_back(a[1]);
-	vertices.push_back(a[2]);
-}
-
-std::vector<unsigned int> indices;
-for (auto& a : m_pModel->m_f_v)
-{
-	indices.push_back(a[0]);
-	indices.push_back(a[1]);
-	indices.push_back(a[2]);
-}
-
-std::cout << m_pModel->m_v.size() << "\t" << vertices.size() << std::endl;
-std::cout <<  m_pModel->m_f_v.size() << "\t" << indices.size() << std::endl;
-
-
 	VertexArray*	vao = new VertexArray();
-	VertexBuffer*	vbo = new VertexBuffer(vertices.data(), vertices.size() * sizeof(float));
-	IndexBuffer*	ebo = new IndexBuffer(indices.data(), indices.size());
+	VertexBuffer*	vbo = new VertexBuffer(m_pModel->get_v().data(), m_pModel->get_v().size() * sizeof(float));
+	IndexBuffer*	ebo = new IndexBuffer(m_pModel->get_f_v().data(), m_pModel->get_f_v().size());
 
 	vao->add_vertex_buffer(*vbo, 3, GL_FLOAT);
 	vao->set_index_buffer(*ebo);
@@ -105,14 +85,14 @@ std::cout <<  m_pModel->m_f_v.size() << "\t" << indices.size() << std::endl;
 		{
 		case 0:
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-			glDrawElements(GL_TRIANGLES , indices.size(), GL_UNSIGNED_INT, nullptr);
+			glDrawElements(GL_TRIANGLES , m_pModel->get_f_v().size(), GL_UNSIGNED_INT, nullptr);
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 			break;
 		case 1:
-			glDrawArrays(GL_POINTS, 0, vertices.size() / 3);
+			glDrawArrays(GL_POINTS, 0, m_pModel->get_v().size());
 			break;
 		case 2:
-			glDrawElements(GL_TRIANGLES , indices.size(), GL_UNSIGNED_INT, nullptr);
+			glDrawElements(GL_TRIANGLES , m_pModel->get_f_v().size(), GL_UNSIGNED_INT, nullptr);
 			break;
 		}
 

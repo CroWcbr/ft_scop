@@ -1,5 +1,6 @@
 #include "FPS.hpp"
 #include <iostream>
+#include <thread>
 
 std::chrono::time_point<std::chrono::system_clock>	FPS::start_time;
 std::chrono::time_point<std::chrono::system_clock>	FPS::end_time;
@@ -29,4 +30,9 @@ void	FPS::calculate_fps()
 		frame_count = 0;
 		total_frame_time = 0.0;
 	}
+}
+
+void	FPS::delay()
+{
+	std::this_thread::sleep_for(std::chrono::milliseconds(10)); 
 }

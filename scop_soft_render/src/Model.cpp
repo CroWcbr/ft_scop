@@ -24,6 +24,7 @@ Model::Model(const char* filename)
 		std::cout << "OK" << std::endl;
 		std::cout << "m_verts:\t" << m_v.size() << std::endl << "m_uv:\t\t" << m_vt.size() << std::endl;
 		std::cout << "m_norms:\t" << m_vn.size() << std::endl << "m_faces:\t" << m_f_v.size() << std::endl;
+		std::cout << "m_faces_uv:\t" << m_f_vt.size() << std::endl << "m_faces_norms:\t" << m_f_vn.size() << std::endl;
 	}
 	std::cout << std::endl;
 }
@@ -96,7 +97,7 @@ int	Model::init_model()
 			std::vector<std::string> split_elem;
 			for (auto& elem : split_line)
 			{
-
+			
 				std::stringstream ss_elem(elem);
 				std::vector<int> split_elem;
 				while(std::getline(ss_elem, tmp, '/'))
@@ -105,9 +106,8 @@ int	Model::init_model()
 						tmp = "0";
 					split_elem.push_back(std::stoi(tmp) - 1);
 				}
-
 				f_v.push_back(split_elem[0]);
-				if (m_f_vt.size())
+				if (m_vt.size())
 					f_vt.push_back(split_elem[1]);
 				if (m_vn.size())
 					f_vn.push_back(split_elem[2]);
@@ -130,12 +130,13 @@ int	Model::init_model()
 					f_vn.pop_back();
 				}
 			}
+			// std::cout << f_v[0] << "\t" << f_vt[0] << "\t" << f_vn[0] << std::endl;
 		}
 	}
 
 	if (max_v > 1)
 		for(auto& vec : m_v)
-			vec /= max_v;
+			vec = vec /max_v;
 	return 0;
 }
 

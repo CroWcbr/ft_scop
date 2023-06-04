@@ -19,7 +19,9 @@ namespace Scop
 		Mat4			m_view_matrix;
 		Mat4			m_projection_matrix;
 		Mat4			m_viewport_matrix;
+		Mat4			m_mvp_matrix;
 		Mat4			m_mvpv_matrix;
+
 
 		bool			m_update_mvpv_matrix = false;
 
@@ -43,9 +45,9 @@ namespace Scop
 
 	public:
 		Camera(const Vec3f& model_position = { 0, 0, 0 }, \
-			const Vec3f& model_rotation = { 0, 0, 0 },
+			const Vec3f& model_rotation = { 0, 180, 0 },
 			const float model_scale = 1,
-			const Vec3f& view_position = { 0, 0, 0 }, \
+			const Vec3f& view_position = { 0, 0, 1.f }, \
 			const Vec3f& view_rotation = { 0, 0, 0 },
 			const ProjectionMode projection_mode = ProjectionMode::Perspective);
 
@@ -54,6 +56,7 @@ namespace Scop
 		Camera&	operator=(const Camera&) = delete;
 		Camera&	operator=(const Camera&&) = delete;
 
+		const Mat4&		get_mvp_matrix();
 		const Mat4&		get_mvpv_matrix();
 		const Mat4&		get_model_matrix() const;
 		const Mat4&		get_view_matrix() const;

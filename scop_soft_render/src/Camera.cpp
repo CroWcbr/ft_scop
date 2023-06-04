@@ -1,5 +1,4 @@
 #include "Camera.hpp"
-#include "Matrix.hpp"
 
 #include <cmath>
 
@@ -54,6 +53,15 @@ namespace Scop
 		update_viewport_matrix();
 	}
 
+	const Mat4&		Camera::get_mvp_matrix()
+	{
+		if (m_update_mvpv_matrix)
+		{
+			update_mvpv_matrix();
+		}
+		return m_mvp_matrix;
+	}
+
 	const Mat4&		Camera::get_mvpv_matrix()
 	{
 		if (m_update_mvpv_matrix)
@@ -73,8 +81,9 @@ namespace Scop
 		{
 			update_view_matrix();
 		}
+		m_mvp_matrix = get_projection_matrix() * get_view_matrix() * get_model_matrix();
+		m_mvpv_matrix = get_viewport_matrix() * m_mvp_matrix;
 		m_update_mvpv_matrix = false;
-		m_mvpv_matrix = get_viewport_matrix() * get_view_matrix() * get_model_matrix();
 	}
 
 	const Mat4&		Camera::get_model_matrix() const
@@ -103,7 +112,6 @@ namespace Scop
 		m_update_model_matrix = true;
 		m_update_mvpv_matrix = true;
 	}
-
 
 	void			Camera::set_model_scale(const float scale)
 	{
@@ -145,18 +153,31 @@ namespace Scop
 				0, 1, 0, 0,
 				0, 0, 1, 0,
 				0, 0, 0, 1};
-		m_update_model_matrix = false;
+
+		Mat4 translate_matrix = {
+				1, 0, 0, -m_view_position[0],
+				0, 1, 0, -m_view_position[1],
+				0, 0, 1, -m_view_position[2],
+				0, 0, 0, 1};
+		
+		Mat4 rotate_matrix = update_euler_rotatate_matrix(-m_view_rotation);
+
+		m_view_matrix = translate_matrix * rotate_matrix;
 		m_update_view_matrix = false;
 	}
 
 	void			Camera::set_view_rotation(const Vec3f& rotation)
 	{
-		;
+		m_view_rotation += rotation;
+		m_update_view_matrix = true;
+		m_update_mvpv_matrix = true;
 	}
 
 	void			Camera::set_view_position(const Vec3f& position)
 	{
-		;
+		m_view_position += position;
+		m_update_view_matrix = true;
+		m_update_mvpv_matrix = true;
 	}
 
 	const Mat4&		Camera::get_projection_matrix() const
@@ -173,45 +194,33 @@ namespace Scop
 
 	void			Camera::update_projection_matrix()
 	{
-		// if (m_projection_mode == ProjectionMode::Perspective)
-		// {
-		// 	float r = 0.1f;
-		// 	float t = 0.1f;
-		// 	float f = 10.f;
-		// 	float n = 0.1f;
-		// 	m_projection_matrix = {
-		// 		n / r, 0, 0, 0,
-		// 		0, n / t, 0, 0,
-		// 		0, 0, (-f - n) / (f - n), -2 * f * n / (f - n),
-		// 		0, 0, -1, 0};
-		// }
-		// else
-		// {
-		// 	float r = 2.f;
-		// 	float t = 2.f;
-		// 	float f = 100.f;
-		// 	float n = 0.1f;
-		// 	m_projection_matrix = {
-		// 		1 / r, 0, 0, 0,
-		// 		0, 1 / t, 0, 0,
-		// 		0, 0, -2 / (f - n), (-f - n) / (f - n),
-		// 		0, 0, 0, 1};
-		// }
-
-		// if (m_projection_mode == ProjectionMode::Perspective)
-		// 	m_projection_matrix = {
-		// 		1, 0, 0, 0,
-		// 		0, -1, 0, 0,
-		// 		0, 0, 1, 0,
-		// 		0, 0, -1.f / 0.f, 1};
-		// else
-		// {
+		if (m_projection_mode == ProjectionMode::Perspective)
+		{
 			m_projection_matrix = {
 				1, 0, 0, 0,
 				0, 1, 0, 0,
-				0, 0, 1, 0,
+				0, 0, -1, 0,
+				0, 0, -1.f / 5, 1};
+
+
+				// 		m_projection_matrix = {
+				// 1, 0, 0, 0,
+				// 0, 1, 0, 0,
+				// 0, 0, -1, 0,
+				// 0, 0, 0, 1};
+		}
+		else
+		{
+			float r = 1.f;
+			float t = 1.f;
+			float f = 100.f;
+			float n = 0.1f;
+			m_projection_matrix = {
+				1 / r, 0, 0, 0,
+				0, 1 / t, 0, 0,
+				0, 0, -2 / (f - n), (-f - n) / (f - n),
 				0, 0, 0, 1};
-		// }
+		}
 	}
 
 	const Mat4&		Camera::get_viewport_matrix() const
