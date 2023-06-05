@@ -30,6 +30,20 @@ Application::~Application()
 	delete m_pWindow;
 }
 
+void	instraction()
+{
+	std::cout << \
+			"\nCommands:\n"
+			"\tactive rot:\t space\n"
+			"\tmode:\t\t 1-6\n"
+			"\tchange proj:\t tab\n"
+			"\trotate:\t\t w-s, a-d, q-w\n"
+			"\tmove:\t\t t-g, f-h, r-y\n"
+			"\tscale:\t\t + -\n"
+			"\texit:\t\t esc\n"
+	<< std::endl;
+}
+
 int Application::start(unsigned int window_width, unsigned int window_height, const char* title, const std::string& path_model_obj, const std::string& path_texture_tga)
 {
 	m_pModel = new Model(path_model_obj.c_str());
@@ -49,6 +63,8 @@ int Application::start(unsigned int window_width, unsigned int window_height, co
 	}
 	m_pShader = new Shader_only_vertex(*m_pModel, *m_pTga_image, m_camera);
 	m_pDrawFunction = &Application::draw_model_in_line;
+
+	instraction();
 
 	while (!m_pWindow->getIsClosed())
 	{
@@ -79,7 +95,6 @@ int Application::start(unsigned int window_width, unsigned int window_height, co
 			std::fill_n(m_pZbuffer, m_image_resolution * m_image_resolution, std::numeric_limits<float>::max());
 			for (size_t i = 0; i < m_pModel->get_f_v().size(); ++i)
 			{
-							std::cout << i << std::endl;
 				for (int j : {0, 1, 2})
 				{
 					m_pShader->vertex(i, j);
@@ -114,9 +129,6 @@ void	Application::point(int x, int y, const unsigned char* color)
 
 void	Application::draw_model_in_line()
 {
-	std::cout << m_pShader->mvpv[0] << std::endl;
-	std::cout << m_pShader->mvpv[1] << std::endl;
-	std::cout << m_pShader->mvpv[2] << std::endl;
 	int x0 = m_pShader->mvpv[0].x() / m_pShader->mvpv[0].w();
 	int y0 = m_pShader->mvpv[0].y() / m_pShader->mvpv[0].w();
 	int x1 = m_pShader->mvpv[1].x() / m_pShader->mvpv[1].w();
@@ -143,11 +155,8 @@ void	Application::line(int x0, int y0, int x1, int y1, const unsigned char* colo
 	int sy = y0 < y1 ? 1 : -1;
 	int err = dx - dy;
 
-	std::cout <<"!!!\t" << x0 << "\t" << x1 << "\t" << y0 << "\t" << y1 << std::endl;
 	while (x0 != x1 || y0 != y1)
 	{
-		std::cout << "x\t" << x0 << "\t" << x1 << std::endl;
-		std::cout << "y\t" << y0 << "\t" << y1 << std::endl;
 		int e2 = 2 * err;
 		if (e2 > -dy)
 		{

@@ -118,19 +118,19 @@ void	Window::init_callback()
 			{
 				case GLFW_PRESS:
 				{
-					std::cout << "[KeyCallback GLFW_PRESS] " << key << std::endl;
+					// std::cout << "[KeyCallback GLFW_PRESS] " << key << std::endl;
 					Input::PressKey(key);
 					break;
 				}
 				case GLFW_RELEASE:
 				{
-					std::cout << "[KeyCallback GLFW_RELEASE] " << key << std::endl;
+					// std::cout << "[KeyCallback GLFW_RELEASE] " << key << std::endl;
 					Input::ReleaseKey(key);
 					break;
 				}
 				case GLFW_REPEAT:
 				{
-					std::cout << "[KeyCallback GLFW_REPEAT] " << key << std::endl;
+					// std::cout << "[KeyCallback GLFW_REPEAT] " << key << std::endl;
 					Input::PressKey(key);
 					break;
 				}
