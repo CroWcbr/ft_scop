@@ -23,6 +23,7 @@ namespace Scop
 		unsigned int		m_bytespp = 3;			//RGB
 		bool				m_redraw = true;
 		void				(Application::*m_pDrawFunction)() = nullptr;
+		bool				m_rotate = false;
 
 		Camera				m_camera{ Vec3f({0, 0, 0}) };
 
@@ -31,8 +32,6 @@ namespace Scop
 		void				draw_model_in_line();
 		void				draw_model_barycentric_simple();
 		void				draw_model_barycentric_full();
-
-		void				draw_model_test();
 
 	protected:
 		void				point(int x, int y, const unsigned char* color);
@@ -52,9 +51,8 @@ namespace Scop
 		int				start(unsigned int window_width, \
 								unsigned int window_height, \
 								const char* title, \
-								const char* path_model_obj, \
-								const char* path_texture_tga);
-
+								const std::string& path_model_obj, \
+								const std::string& path_texture_tga);
 	};
 
 }

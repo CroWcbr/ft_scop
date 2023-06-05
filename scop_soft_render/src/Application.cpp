@@ -30,14 +30,14 @@ Application::~Application()
 	delete m_pWindow;
 }
 
-int Application::start(unsigned int window_width, unsigned int window_height, const char* title, const char* path_model_obj, const char* path_texture_tga)
+int Application::start(unsigned int window_width, unsigned int window_height, const char* title, const std::string& path_model_obj, const std::string& path_texture_tga)
 {
-	m_pModel = new Model(path_model_obj);
+	m_pModel = new Model(path_model_obj.c_str());
 	if (m_pModel->getResultCode())
 	{
 		return m_pModel->getResultCode();
 	}
-	m_pTga_image = new TGAimage(path_texture_tga);
+	m_pTga_image = new TGAimage(path_texture_tga.c_str());
 	if (m_pTga_image->getResultCode())
 	{
 		return m_pTga_image->getResultCode();
@@ -66,14 +66,20 @@ int Application::start(unsigned int window_width, unsigned int window_height, co
 			m_camera.change_viewport_matrix(m_image_resolution);
 		}
 
+		if (m_rotate)
+		{
+			m_redraw = true;
+			m_camera.set_view_rotation({0, 10, 0});
+		}
+
 		if (m_redraw)
 		{
 			m_redraw = false;
 			memset(m_pImage, 0, m_image_size);
-			std::fill_n(m_pZbuffer, m_image_resolution * m_image_resolution, std::numeric_limits<float>::min());
-
+			std::fill_n(m_pZbuffer, m_image_resolution * m_image_resolution, std::numeric_limits<float>::max());
 			for (size_t i = 0; i < m_pModel->get_f_v().size(); ++i)
 			{
+							std::cout << i << std::endl;
 				for (int j : {0, 1, 2})
 				{
 					m_pShader->vertex(i, j);
@@ -108,6 +114,9 @@ void	Application::point(int x, int y, const unsigned char* color)
 
 void	Application::draw_model_in_line()
 {
+	std::cout << m_pShader->mvpv[0] << std::endl;
+	std::cout << m_pShader->mvpv[1] << std::endl;
+	std::cout << m_pShader->mvpv[2] << std::endl;
 	int x0 = m_pShader->mvpv[0].x() / m_pShader->mvpv[0].w();
 	int y0 = m_pShader->mvpv[0].y() / m_pShader->mvpv[0].w();
 	int x1 = m_pShader->mvpv[1].x() / m_pShader->mvpv[1].w();
@@ -134,8 +143,11 @@ void	Application::line(int x0, int y0, int x1, int y1, const unsigned char* colo
 	int sy = y0 < y1 ? 1 : -1;
 	int err = dx - dy;
 
+	std::cout <<"!!!\t" << x0 << "\t" << x1 << "\t" << y0 << "\t" << y1 << std::endl;
 	while (x0 != x1 || y0 != y1)
 	{
+		std::cout << "x\t" << x0 << "\t" << x1 << std::endl;
+		std::cout << "y\t" << y0 << "\t" << y1 << std::endl;
 		int e2 = 2 * err;
 		if (e2 > -dy)
 		{
@@ -192,7 +204,7 @@ void	Application::draw_model_barycentric_simple()
 		for (int y = std::max(bboxmin[1], 0); y <= std::min(bboxmax[1], static_cast<int>(m_image_resolution - 1)); y++)
 		{
 			float frag_depth = pts[0][2] * bc0.x() + pts[1][2] * bc1.y() + pts[2][2] * bc2.z();
-			if (frag_depth < m_pZbuffer[x + y * m_image_resolution])
+			if (frag_depth > m_pZbuffer[x + y * m_image_resolution])
 				continue;
 			Vec2f p({static_cast<float>(x), static_cast<float>(y)});
 			Vec3f bc_screen = barycentric(pts2[0], pts2[1], pts2[2], p);
@@ -206,7 +218,6 @@ void	Application::draw_model_barycentric_simple()
 
 void	Application::draw_model_barycentric_full()
 {
-	Vec4f* clip_verts = m_pShader->mv;
 	Vec4f* tri = m_pShader->mvpv;
 	Vec4f pts[3] = { tri[0], tri[1], tri[2] };
 	Vec2f pts2[3] = { {pts[0][0]/pts[0][3] , pts[0][1]/pts[0][3]}, \
@@ -231,7 +242,7 @@ void	Application::draw_model_barycentric_full()
 				continue;
 			Vec3f bc_clip   = {bc_screen.x() / pts[0][3], bc_screen.y() / pts[1][3], bc_screen.z() / pts[2][3]};
 			bc_clip = bc_clip / (bc_clip.x() + bc_clip.y() + bc_clip.z());
-			float frag_depth = Vec3f({clip_verts[0][2], clip_verts[1][2], clip_verts[2][2]}) * bc_clip;
+			float frag_depth = Vec3f({tri[0][2], tri[1][2], tri[2][2]}) * bc_clip;
 			if (frag_depth > m_pZbuffer[x + y * m_image_resolution])
 				continue;
 			m_pShader->fragment(bc_clip);

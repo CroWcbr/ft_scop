@@ -48,6 +48,7 @@ namespace Scop
 		, m_projection_mode(projection_mode)
 	{
 		update_model_matrix();
+		m_view_position = {0,0,5};
 		update_view_matrix();
 		update_projection_matrix();
 		update_viewport_matrix();
@@ -196,30 +197,35 @@ namespace Scop
 	{
 		if (m_projection_mode == ProjectionMode::Perspective)
 		{
-			m_projection_matrix = {
-				1, 0, 0, 0,
-				0, 1, 0, 0,
-				0, 0, -1, 0,
-				0, 0, -1.f / 5, 1};
+				float fov = 60;
+				float aspect_ratio = 1;
+				float near = 0.1;
+				float far = 100.f;
+				float fov_rad = fov * (M_PI / 180.0);;
+				float tan_half_fov = std::tan(fov_rad / 2);
+				float f = 1.0f / tan_half_fov;
+				m_projection_matrix = {
+					f / aspect_ratio, 0, 0, 0,
+					0, f, 0, 0,
+					0, 0, (far + near) / (near - far), (2 * far * near) / (near - far),
+					0, 0, -1, 0
+				};
 
-
-				// 		m_projection_matrix = {
-				// 1, 0, 0, 0,
-				// 0, 1, 0, 0,
-				// 0, 0, -1, 0,
-				// 0, 0, 0, 1};
 		}
 		else
 		{
-			float r = 1.f;
-			float t = 1.f;
-			float f = 100.f;
-			float n = 0.1f;
+			float l = -2;
+			float r = 2;
+			float b = -2;
+			float t = 2;
+			float n = 0.1;
+			float f = 100;
 			m_projection_matrix = {
-				1 / r, 0, 0, 0,
-				0, 1 / t, 0, 0,
-				0, 0, -2 / (f - n), (-f - n) / (f - n),
-				0, 0, 0, 1};
+				2 / (r - l), 0, 0, -(r + l) / (r - l),
+				0, 2 / (t - b), 0, -(t + b) / (t - b),
+				0, 0, -2 / (f - n), -(f + n) / (f - n),
+				0, 0, 0, 1
+			};
 		}
 	}
 

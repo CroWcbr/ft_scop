@@ -52,6 +52,12 @@ class ApplicationEditor : public Scop::Application
 				m_pDrawFunction = &Application::draw_model_barycentric_full;
 			}
 
+			if (Scop::Input::IsKeyPressed(Scop::KeyCode::KEY_SPACE))
+			{
+				std::cout << "Application KEY_SPACE" << std::endl;
+				m_rotate = !m_rotate;
+			}
+
 			if (Scop::Input::IsKeyPressed(Scop::KeyCode::KEY_TAB))
 			{
 				std::cout << "Application KEY_TAB" << std::endl;
@@ -61,32 +67,32 @@ class ApplicationEditor : public Scop::Application
 			if (Scop::Input::IsKeyPressed(Scop::KeyCode::KEY_F))
 			{
 				std::cout << "Application KEY_F" << std::endl;
-				position_delta.x() -= 0.05;
+				position_delta.x() += 0.05;
 			}
 			if (Scop::Input::IsKeyPressed(Scop::KeyCode::KEY_H))
 			{
 				std::cout << "Application KEY_H" << std::endl;
-				position_delta.x() += 0.05;
+				position_delta.x() -= 0.05;
 			}
 			if (Scop::Input::IsKeyPressed(Scop::KeyCode::KEY_G))
 			{
 				std::cout << "Application KEY_G" << std::endl;
-				position_delta.y() -= 0.05;
+				position_delta.y() += 0.05;
 			}
 			if (Scop::Input::IsKeyPressed(Scop::KeyCode::KEY_T))
 			{
 				std::cout << "Application KEY_T" << std::endl;
-				position_delta.y() += 0.05;
+				position_delta.y() -= 0.05;
 			}
 			if (Scop::Input::IsKeyPressed(Scop::KeyCode::KEY_Y))
 			{
 				std::cout << "Application KEY_Y" << std::endl;
-				position_delta.z() += 0.05;
+				position_delta.z() -= 0.05;
 			}
 			if (Scop::Input::IsKeyPressed(Scop::KeyCode::KEY_R))
 			{
 				std::cout << "Application KEY_R" << std::endl;
-				position_delta.z() -= 0.05;
+				position_delta.z() += 0.05;
 			}
 
 			if (Scop::Input::IsKeyPressed(Scop::KeyCode::KEY_W))
@@ -133,7 +139,9 @@ class ApplicationEditor : public Scop::Application
 				m_camera.set_model_scale(scale);
 			}
 
-			m_camera.set_model_rotation_and_position(rotation_delta, position_delta);
+			m_camera.set_model_rotation(rotation_delta);
+			m_camera.set_view_position(position_delta);
+
 			Scop::Input::ClearKeyEvent();
 			m_redraw = true;
 		}
@@ -142,18 +150,38 @@ class ApplicationEditor : public Scop::Application
 
 int main(int argc, char **argv)
 {
-	const char*	path_model_obj = "../blender/african_head/african_head.obj";
-	// const char*	path_model_obj = "../blender/teapot.obj";
-	// const char*	path_model_obj = "../blender/42.obj";
-	// const char*	path_model_obj = "../blender/test.obj";
+	std::string	path_model_obj;
+	std::string	path_texture_tga;
 
-	// const char*	path_texture_tga = "../blender/african_head/african_head_diffuse.tga";
-	const char*	path_texture_tga = "../blender/cat.tga";
-	// const char*	path_texture_tga = "../blender/output2.tga";
+	if (argc == 3)
+	{
+		path_model_obj = argv[1];
+		path_texture_tga = argv[2];
+	}
+	else if (argc == 2)
+	{
+		path_model_obj = argv[1];
+		path_texture_tga = "../blender/cat.tga";
+	}
+	else if (argc == 1)
+	{
+		// path_model_obj = "../blender/african_head/african_head.obj";
+		path_model_obj = "../blender/teapot.obj";
+		// path_model_obj = "../blender/42.obj";
+		// path_model_obj = "../blender/test.obj";
+
+		// path_texture_tga = "../blender/african_head/african_head_diffuse.tga";
+		path_texture_tga = "../blender/cat.tga";
+		// path_texture_tga = "../blender/output2.tga";
+	}
+	else
+	{
+		std::cerr << "wrong input" << std::endl;
+		return -1;
+	}
 
 	ApplicationEditor*	scop = new ApplicationEditor();
 	int returnCode = scop->start(400, 400, "test", path_model_obj, path_texture_tga);
-
 	delete scop;
 
 	return returnCode;

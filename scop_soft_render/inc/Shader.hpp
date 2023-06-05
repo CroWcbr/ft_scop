@@ -100,7 +100,7 @@ namespace Scop
 
 	struct Shader_intensity: public IShader
 	{
-		Vec3f light_dir = Vec3f({1, 1, 1}).normalize();
+		Vec3f light_dir = Vec3f({1, 1, -1}).normalize();
 		Shader_intensity(const Model& model, const TGAimage &texture, Camera &camera)
 			: IShader(model, texture, camera)
 		{}
@@ -126,6 +126,7 @@ namespace Scop
 			else if (intensity>.15) intensity = .30;
 			else intensity = 0;
 			// if (intensity < 0) intensity = 0;
+			// if (intensity > 1) intensity = 1;
 			for (int i = 0; i < 3; i++)
 				color[i] = 255 * intensity;
 		}
@@ -133,7 +134,7 @@ namespace Scop
 
 	struct Shader_texture_intensity: public IShader
 	{
-		Vec3f light_dir = Vec3f({1, 1, 1}).normalize();
+		Vec3f light_dir = Vec3f({1, 1, -1}).normalize();
 		Shader_texture_intensity(const Model& model, const TGAimage &texture, Camera &camera)
 			: IShader(model, texture, camera)
 		{}
