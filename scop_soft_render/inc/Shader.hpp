@@ -13,14 +13,13 @@ namespace Scop
 		const Model		&model;
 		const TGAimage	&texture;
 		Camera			&camera;
-		Vec4f			view_tri[3];
 		unsigned char	color[3];
 
 		Vec2f			uv[3];
 		Vec4f			mv[3];
 		Vec4f			mvp[3];
 		Vec4f			mvpv[3];
-		Vec4f			gl_Position[3];
+		Vec3f			varying_intensity;
 
 		IShader(const Model &m, const TGAimage &t, Camera &c)
 			: model(m)
@@ -46,7 +45,7 @@ namespace Scop
 		virtual void vertex(int i_face, int i_vert)
 		{
 			std::vector<int> face = model.get_f_v()[i_face];
-			view_tri[i_vert] = camera.get_mvpv_matrix() * Vec4f(model.get_v()[face[i_vert]], 1.f);
+			mvpv[i_vert] = camera.get_mvpv_matrix() * Vec4f(model.get_v()[face[i_vert]], 1.f);
 		}
 
 		virtual void fragment(Vec3f bar = {0,0,0})
@@ -62,11 +61,7 @@ namespace Scop
 		virtual void vertex(int i_face, int i_vert)
 		{
 			std::vector<int> face = model.get_f_v()[i_face];
-			mv[i_vert] = camera.get_view_matrix() *  camera.get_model_matrix() * Vec4f(model.get_v()[face[i_vert]], 1.f);
-			mvp[i_vert] = camera.get_mvp_matrix() * Vec4f(model.get_v()[face[i_vert]], 1.f);
 			mvpv[i_vert] = camera.get_mvpv_matrix() * Vec4f(model.get_v()[face[i_vert]], 1.f);
-			view_tri[i_vert] = mv[i_vert];
-			gl_Position[i_vert] = mvp[i_vert];
 		}
 
 		virtual void fragment(Vec3f bar = {0,0,0})
@@ -77,14 +72,9 @@ namespace Scop
 		}
 	};
 
-	struct Shader_test: public IShader
+	struct Shader_texture: public IShader
 	{
-
-
-
-
-
-		Shader_test(const Model& model, const TGAimage &texture, Camera &camera)
+		Shader_texture(const Model& model, const TGAimage &texture, Camera &camera)
 			: IShader(model, texture, camera)
 		{}
 
@@ -92,41 +82,86 @@ namespace Scop
 		{
 			std::vector<int> f_vt = model.get_f_vt()[i_face];
 			uv[i_vert] = model.get_vt()[f_vt[i_vert]];
-
 			std::vector<int> face = model.get_f_v()[i_face];
 			mv[i_vert] = camera.get_view_matrix() *  camera.get_model_matrix() * Vec4f(model.get_v()[face[i_vert]], 1.f);
 			mvp[i_vert] = camera.get_mvp_matrix() * Vec4f(model.get_v()[face[i_vert]], 1.f);
 			mvpv[i_vert] = camera.get_mvpv_matrix() * Vec4f(model.get_v()[face[i_vert]], 1.f);
-			view_tri[i_vert] = mv[i_vert];
-			gl_Position[i_vert] = mvp[i_vert];
 		}
 
 		virtual void fragment(Vec3f bar = {0,0,0})
 		{
-			Vec2f uv_tmp;
-		// std::cout << "uv0\t" << uv[0] << std::endl;
-		// std::cout << "uv1\t" << uv[1] << std::endl;
-		// std::cout << "uv2\t" << uv[2] << std::endl;
-		// std::cout << "bar\t" << bar << std::endl;
-		
-			uv_tmp.x() = (Vec3f({uv[0].x(), uv[1].x(), uv[2].x()}) * bar);
-			uv_tmp.y() = (Vec3f({uv[0].y(), uv[1].y(), uv[2].y()}) * bar);
-		// std::cout << bar << "\t" << uv[0] << uv[1] << uv[2] << "\t" << uv_tmp << std::endl;
-			// std::cout << uv_tmp.x() << "\t" << uv_tmp.y() << std::endl;
-			int idx = ((int)(uv_tmp.x() * texture.getWidth()) + (int)(uv_tmp.y() * texture.getHeight()) * texture.getWidth()) * 3;
-		// std::cout << "uv_tmp\t" << uv_tmp << "\t" << idx << std::endl;
-			memcpy(color, texture.getTGAimage() + idx, 3);
-			// color[0] = m_pTga_image->getTGAimage()[idx];
-			// color[1] = m_pTga_image->getTGAimage()[idx + 1];
-			// color[2] = m_pTga_image->getTGAimage()[idx + 2];
-			// color = model->diffuse(uv)*intensity;
-
-			// color[0] = rand() % 255;
-			// color[1] = rand() % 255;
-			// color[2] = rand() % 255;
+			Vec2i uv_tmp;
+			uv_tmp.x() = (Vec3f({uv[0].x(), uv[1].x(), uv[2].x()}) * bar) * texture.getWidth();
+			uv_tmp.y() = (Vec3f({uv[0].y(), uv[1].y(), uv[2].y()}) * bar) * texture.getHeight();
+			int idx = (uv_tmp.x() + uv_tmp.y() * texture.getWidth()) * texture.getBytespp();
+			memcpy(color, texture.getTGAimage() + idx, texture.getBytespp());
 		}
 	};
 
+	struct Shader_intensity: public IShader
+	{
+		Vec3f light_dir = Vec3f({1, 1, 1}).normalize();
+		Shader_intensity(const Model& model, const TGAimage &texture, Camera &camera)
+			: IShader(model, texture, camera)
+		{}
 
+		virtual void vertex(int i_face, int i_vert)
+		{
+			std::vector<int> f_vn = model.get_f_vn()[i_face];
+			Vec3f tmp = model.get_vn()[f_vn[i_vert]];
+			varying_intensity[i_vert] = std::min(1.f, std::max(0.f, model.get_vn()[f_vn[i_vert]] * light_dir));
+			std::vector<int> face = model.get_f_v()[i_face];
+			mv[i_vert] = camera.get_view_matrix() *  camera.get_model_matrix() * Vec4f(model.get_v()[face[i_vert]], 1.f);
+			mvp[i_vert] = camera.get_mvp_matrix() * Vec4f(model.get_v()[face[i_vert]], 1.f);
+			mvpv[i_vert] = camera.get_mvpv_matrix() * Vec4f(model.get_v()[face[i_vert]], 1.f);
+		}
+
+		virtual void fragment(Vec3f bar = {0,0,0})
+		{
+			float intensity = varying_intensity * bar;
+			if (intensity>.85) intensity = 1;
+			else if (intensity>.60) intensity = .80;
+			else if (intensity>.45) intensity = .60;
+			else if (intensity>.30) intensity = .45;
+			else if (intensity>.15) intensity = .30;
+			else intensity = 0;
+			// if (intensity < 0) intensity = 0;
+			for (int i = 0; i < 3; i++)
+				color[i] = 255 * intensity;
+		}
+	};
+
+	struct Shader_texture_intensity: public IShader
+	{
+		Vec3f light_dir = Vec3f({1, 1, 1}).normalize();
+		Shader_texture_intensity(const Model& model, const TGAimage &texture, Camera &camera)
+			: IShader(model, texture, camera)
+		{}
+
+		virtual void vertex(int i_face, int i_vert)
+		{
+			std::vector<int> f_vt = model.get_f_vt()[i_face];
+			uv[i_vert] = model.get_vt()[f_vt[i_vert]];
+			std::vector<int> f_vn = model.get_f_vn()[i_face];
+			varying_intensity[i_vert] = std::max(0.f, model.get_vn()[f_vn[i_vert]] * light_dir);
+			std::vector<int> face = model.get_f_v()[i_face];
+			mv[i_vert] = camera.get_view_matrix() *  camera.get_model_matrix() * Vec4f(model.get_v()[face[i_vert]], 1.f);
+			mvp[i_vert] = camera.get_mvp_matrix() * Vec4f(model.get_v()[face[i_vert]], 1.f);
+			mvpv[i_vert] = camera.get_mvpv_matrix() * Vec4f(model.get_v()[face[i_vert]], 1.f);
+		}
+
+		virtual void fragment(Vec3f bar = {0,0,0})
+		{
+			Vec2i uv_tmp;
+			uv_tmp.x() = (Vec3f({uv[0].x(), uv[1].x(), uv[2].x()}) * bar) * texture.getWidth();
+			uv_tmp.y() = (Vec3f({uv[0].y(), uv[1].y(), uv[2].y()}) * bar) * texture.getHeight();
+			int idx = (uv_tmp.x() + uv_tmp.y() * texture.getWidth()) * texture.getBytespp();
+			memcpy(color, texture.getTGAimage() + idx, texture.getBytespp());
+			float intensity = varying_intensity * bar;
+			if (intensity < 0) intensity = 0;
+			if (intensity > 1) intensity = 1;
+			for (int i = 0; i < 3; i++)
+				color[i] *= intensity;
+		}
+	};
 }
-

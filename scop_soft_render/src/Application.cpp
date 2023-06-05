@@ -70,21 +70,17 @@ int Application::start(unsigned int window_width, unsigned int window_height, co
 		{
 			m_redraw = false;
 			memset(m_pImage, 0, m_image_size);
-			std::fill_n(m_pZbuffer, m_image_resolution * m_image_resolution, std::numeric_limits<float>::max());
 			std::fill_n(m_pZbuffer, m_image_resolution * m_image_resolution, std::numeric_limits<float>::min());
 
 			for (size_t i = 0; i < m_pModel->get_f_v().size(); ++i)
 			{
-				// std::cout << "\t" << i << std::endl;
 				for (int j : {0, 1, 2})
 				{
-					// std::cout << "\t\t" << j << std::endl;
 					m_pShader->vertex(i, j);
 				}
 				(this->*m_pDrawFunction)();
 			}
 			m_pWindow->on_update(m_pImage, m_image_resolution);
-			// m_pWindow->on_update(m_pTga_image->getTGAimage(), m_pTga_image->getHeight());
 		}
 		m_pWindow->event();
 		on_update();
@@ -99,7 +95,7 @@ void	Application::draw_model_in_point()
 {
 	for (int i = 0; i < 3; ++i)
 	{
-		point(m_pShader->view_tri[i].x(), m_pShader->view_tri[i].y(), m_pShader->color);
+		point(m_pShader->mvpv[i].x() / m_pShader->mvpv[i].w(), m_pShader->mvpv[i].y() / m_pShader->mvpv[i].w(), m_pShader->color);
 	}
 }
 
@@ -112,12 +108,12 @@ void	Application::point(int x, int y, const unsigned char* color)
 
 void	Application::draw_model_in_line()
 {
-	int x0 = m_pShader->view_tri[0].x() / m_pShader->view_tri[0].w();
-	int y0 = m_pShader->view_tri[0].y() / m_pShader->view_tri[0].w();
-	int x1 = m_pShader->view_tri[1].x() / m_pShader->view_tri[1].w();
-	int y1 = m_pShader->view_tri[1].y() / m_pShader->view_tri[1].w();
-	int x2 = m_pShader->view_tri[2].x() / m_pShader->view_tri[2].w();
-	int y2 = m_pShader->view_tri[2].y() / m_pShader->view_tri[2].w();
+	int x0 = m_pShader->mvpv[0].x() / m_pShader->mvpv[0].w();
+	int y0 = m_pShader->mvpv[0].y() / m_pShader->mvpv[0].w();
+	int x1 = m_pShader->mvpv[1].x() / m_pShader->mvpv[1].w();
+	int y1 = m_pShader->mvpv[1].y() / m_pShader->mvpv[1].w();
+	int x2 = m_pShader->mvpv[2].x() / m_pShader->mvpv[2].w();
+	int y2 = m_pShader->mvpv[2].y() / m_pShader->mvpv[2].w();
 
 	line(x0, y0, x1, y1, m_pShader->color);
 	line(x1, y1, x2, y2, m_pShader->color);
@@ -195,16 +191,13 @@ void	Application::draw_model_barycentric_simple()
 	{
 		for (int y = std::max(bboxmin[1], 0); y <= std::min(bboxmax[1], static_cast<int>(m_image_resolution - 1)); y++)
 		{
-std::cout << x << "\t" << y << std::endl;
 			float frag_depth = pts[0][2] * bc0.x() + pts[1][2] * bc1.y() + pts[2][2] * bc2.z();
 			if (frag_depth < m_pZbuffer[x + y * m_image_resolution])
 				continue;
 			Vec2f p({static_cast<float>(x), static_cast<float>(y)});
 			Vec3f bc_screen = barycentric(pts2[0], pts2[1], pts2[2], p);
-
 			if (bc_screen.x() < 0 || bc_screen.y() < 0 || bc_screen.z() < 0)
 				continue;
-			// m_pShader->fragment(bc_screen);
 			m_pZbuffer[x + y * m_image_resolution] = frag_depth;
 			memcpy(m_pImage + static_cast<int>(y * m_image_resolution + x) * m_bytespp, m_pShader->color, m_bytespp);
 		}
@@ -229,28 +222,19 @@ void	Application::draw_model_barycentric_full()
 			bboxmax[j] = std::max(bboxmax[j], static_cast<int>(pts2[i][j]));
 		}
 	}
-	// m_pShader->fragment();
 	for (int x = std::max(bboxmin[0], 0); x <= std::min(bboxmax[0], static_cast<int>(m_image_resolution - 1)); ++x)
 	{
 		for (int y = std::max(bboxmin[1], 0); y <= std::min(bboxmax[1], static_cast<int>(m_image_resolution - 1)); ++y)
 		{
-// std::cout << x << "\t" << y << std::endl;
 			Vec3f bc_screen = barycentric(pts2[0], pts2[1], pts2[2], {static_cast<float>(x), static_cast<float>(y)});
-// std::cout << "000" << std::endl;
 			if (bc_screen.x() < 0 || bc_screen.y() < 0 || bc_screen.z() < 0)
 				continue;
-// std::cout << "111" << std::endl;
 			Vec3f bc_clip   = {bc_screen.x() / pts[0][3], bc_screen.y() / pts[1][3], bc_screen.z() / pts[2][3]};
-// std::cout << "222" << std::endl;
 			bc_clip = bc_clip / (bc_clip.x() + bc_clip.y() + bc_clip.z());
-// std::cout << "333" << std::endl;
 			float frag_depth = Vec3f({clip_verts[0][2], clip_verts[1][2], clip_verts[2][2]}) * bc_clip;
-// std::cout << "444" << std::endl;
 			if (frag_depth > m_pZbuffer[x + y * m_image_resolution])
 				continue;
-// std::cout << "555" << std::endl;
 			m_pShader->fragment(bc_clip);
-// std::cout << "666" << std::endl;
 			m_pZbuffer[x + y * m_image_resolution] = frag_depth;
 			memcpy(m_pImage + (y * m_image_resolution + x) * m_bytespp, m_pShader->color, m_bytespp);
 		}

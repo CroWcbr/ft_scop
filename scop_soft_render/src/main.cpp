@@ -36,7 +36,19 @@ class ApplicationEditor : public Scop::Application
 			if (Scop::Input::IsKeyPressed(Scop::KeyCode::KEY_4))
 			{
 				std::cout << "Application KEY_4" << std::endl;
-				m_pShader = new Scop::Shader_test(*m_pModel, *m_pTga_image, m_camera);
+				m_pShader = new Scop::Shader_texture(*m_pModel, *m_pTga_image, m_camera);
+				m_pDrawFunction = &Application::draw_model_barycentric_full;
+			}
+			if (Scop::Input::IsKeyPressed(Scop::KeyCode::KEY_5))
+			{
+				std::cout << "Application KEY_5" << std::endl;
+				m_pShader = new Scop::Shader_intensity(*m_pModel, *m_pTga_image, m_camera);
+				m_pDrawFunction = &Application::draw_model_barycentric_full;
+			}
+			if (Scop::Input::IsKeyPressed(Scop::KeyCode::KEY_6))
+			{
+				std::cout << "Application KEY_6" << std::endl;
+				m_pShader = new Scop::Shader_texture_intensity(*m_pModel, *m_pTga_image, m_camera);
 				m_pDrawFunction = &Application::draw_model_barycentric_full;
 			}
 
@@ -130,8 +142,8 @@ class ApplicationEditor : public Scop::Application
 
 int main(int argc, char **argv)
 {
-	// const char*	path_model_obj = "../blender/african_head/african_head.obj";
-	const char*	path_model_obj = "../blender/teapot.obj";
+	const char*	path_model_obj = "../blender/african_head/african_head.obj";
+	// const char*	path_model_obj = "../blender/teapot.obj";
 	// const char*	path_model_obj = "../blender/42.obj";
 	// const char*	path_model_obj = "../blender/test.obj";
 

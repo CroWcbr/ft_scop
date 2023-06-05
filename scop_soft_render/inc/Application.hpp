@@ -32,7 +32,7 @@ namespace Scop
 		void				draw_model_barycentric_simple();
 		void				draw_model_barycentric_full();
 
-		// void				draw_model_test();
+		void				draw_model_test();
 
 	protected:
 		void				point(int x, int y, const unsigned char* color);
