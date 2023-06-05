@@ -29,10 +29,10 @@ namespace Scop
 	public:
 		void				draw_model_in_point();
 		void				draw_model_in_line();
-		// void				draw_model_in_simple_triangle_rand_color();
-		void				draw_model_in_simple_triangle_rand_color_barycentric();
+		void				draw_model_barycentric_simple();
+		void				draw_model_barycentric_full();
 
-		void				draw_model_test();
+		// void				draw_model_test();
 
 	protected:
 		void				point(int x, int y, const unsigned char* color);

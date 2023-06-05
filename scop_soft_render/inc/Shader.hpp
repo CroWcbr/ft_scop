@@ -61,9 +61,6 @@ namespace Scop
 
 		virtual void vertex(int i_face, int i_vert)
 		{
-			std::vector<int> f_vt = model.get_f_vt()[i_face];
-			uv[i_vert] = model.get_vt()[f_vt[i_vert]];
-
 			std::vector<int> face = model.get_f_v()[i_face];
 			mv[i_vert] = camera.get_view_matrix() *  camera.get_model_matrix() * Vec4f(model.get_v()[face[i_vert]], 1.f);
 			mvp[i_vert] = camera.get_mvp_matrix() * Vec4f(model.get_v()[face[i_vert]], 1.f);
@@ -111,10 +108,12 @@ namespace Scop
 		// std::cout << "uv1\t" << uv[1] << std::endl;
 		// std::cout << "uv2\t" << uv[2] << std::endl;
 		// std::cout << "bar\t" << bar << std::endl;
+		
 			uv_tmp.x() = (Vec3f({uv[0].x(), uv[1].x(), uv[2].x()}) * bar);
 			uv_tmp.y() = (Vec3f({uv[0].y(), uv[1].y(), uv[2].y()}) * bar);
-
-			int idx = ((int)(uv_tmp.x() * 1024) + (int)(uv_tmp.y() * 1024) * 1024) * 3;
+		// std::cout << bar << "\t" << uv[0] << uv[1] << uv[2] << "\t" << uv_tmp << std::endl;
+			// std::cout << uv_tmp.x() << "\t" << uv_tmp.y() << std::endl;
+			int idx = ((int)(uv_tmp.x() * texture.getWidth()) + (int)(uv_tmp.y() * texture.getHeight()) * texture.getWidth()) * 3;
 		// std::cout << "uv_tmp\t" << uv_tmp << "\t" << idx << std::endl;
 			memcpy(color, texture.getTGAimage() + idx, 3);
 			// color[0] = m_pTga_image->getTGAimage()[idx];

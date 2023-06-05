@@ -29,6 +29,9 @@ Model::Model(const char* filename)
 	std::cout << std::endl;
 }
 
+Model::~Model()
+{}
+
 int	Model::init_model()
 {
 	std::ifstream file;
@@ -39,8 +42,6 @@ int	Model::init_model()
 		file.close();
 		return 1;
 	}
-	float max_v = 0;
-	float max_f = 0;
 	std::string line;
 	std::vector<std::vector<std::string>> f_tmp;
 	while (!file.eof())
@@ -55,8 +56,6 @@ int	Model::init_model()
 			for (int i = 0; i < 3; i++)
 			{
 				iss >> v[i];
-				if (max_v < abs(v[i]))
-					max_v = abs(v[i]);
 			}
 			m_v.push_back(v);
 		}
@@ -130,17 +129,124 @@ int	Model::init_model()
 					f_vn.pop_back();
 				}
 			}
-			// std::cout << f_v[0] << "\t" << f_vt[0] << "\t" << f_vn[0] << std::endl;
 		}
 	}
+	file.close();
+	
+	return optimization_model();
+}
 
-	if (max_v > 1)
-		for(auto& vec : m_v)
-			vec = vec /max_v;
+int	Model::optimization_model()
+{
+	if (m_v.empty())
+	{
+		std::cerr << "No model point in file: " << m_filename << std::endl;
+		return 2;
+	}
+	Vec3f	_min, _max;
+	_min = _max = m_v[0];
+	for (const auto& v : m_v)
+	{
+		for (int i = 0; i < 3; ++i)
+		{
+			if (_min[i] > v[i])
+				_min[i] = v[i];
+			if (_max[i] < v[i])
+				_max[i] = v[i];
+		}
+	}
+	Vec3f	delta_v = (_max + _min) / 2;
+	Vec3f	delta_v_max = (_max - _min) / 2;;
+	float max_v = (std::max({delta_v_max.x(), delta_v_max.y(), delta_v_max.z()}));
+	for (auto& v : m_v)
+	{
+		v = (v - delta_v) / max_v;
+	}
+
+	if (m_vt.empty())
+	{
+		m_f_vt = m_f_v;
+		SphericalTextureCoords();
+	}
+
+	if (m_vn.empty())
+	{
+		m_f_vn = m_f_v;
+		calculateNormal();
+	}
 	return 0;
 }
 
-Model::~Model()
+void Model::SphericalTextureCoords()
 {
+	for (const auto& v : m_v)
+	{
+		float theta = std::atan2(v.z(), v.x());
+		float phi = std::acos(v.y());
+		float uu = 1 - std::abs(theta) / (2.0f * M_PI);
+		float vv = 1 - std::abs(phi) / M_PI;
+		m_vt.push_back(Vec2f({ uu, vv }));
+	}
+}
 
+void Model::CylindricalTextureCoords()
+{
+	for (const auto& v : m_v)
+	{
+		float theta = std::atan2(v.z(), v.x());
+		float vv = v.y();
+		float uu = std::abs(theta) / (2.0f * M_PI);
+		vv = (vv + 1.0f) / 2.0f;
+		m_vt.push_back(Vec2f({ uu, vv }));
+	}
+}
+
+void Model::PlanarTextureCoords()
+{
+	Vec3f	_max;
+	_max = m_v[0];
+	_max[2] = 0;
+	for (const auto& v : m_v)
+	{
+		for (int i = 0; i < 2; ++i)
+		{
+			if (_max[i] < v[i])
+				_max[i] = v[i];
+		}
+	}
+	float max_uv = std::max(_max.x(), _max.y());
+	for (const auto& v : m_v)
+	{
+		float uu = (v.x() + max_uv) / (2 * max_uv);
+		float vv = (v.y() + max_uv) / (2 * max_uv);
+		m_vt.push_back(Vec2f({ uu, vv }));
+	}
+}
+
+void Model::calculateNormal()
+{
+	m_vn.assign(m_v.size(), {0,0,0});
+	std::vector<int> counts(m_v.size(), 0);
+	for (const auto& f : m_f_v)
+	{
+		const Vec3f& v0 = m_v[f[0]];
+		const Vec3f& v1 = m_v[f[1]];
+		const Vec3f& v2 = m_v[f[2]];
+		Vec3f side1 = v1 - v0;
+		Vec3f side2 = v2 - v0;
+		Vec3f normal = side1 ^ side2;
+		m_vn[f[0]] += normal;
+		m_vn[f[1]] += normal;
+		m_vn[f[2]] += normal;
+		counts[f[0]] += 1;
+		counts[f[1]] += 1;
+		counts[f[2]] += 1;
+	}
+	for (size_t i = 0; i < m_vn.size(); ++i)
+	{
+		if (counts[i] > 0)
+		{
+			m_vn[i] = (m_vn[i] / static_cast<float>(counts[i])).normalize();
+		}
+	}
 }

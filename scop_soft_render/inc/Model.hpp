@@ -17,6 +17,12 @@ public:
 
 private:
 	int		init_model();
+	int		optimization_model();
+
+	void	SphericalTextureCoords();
+	void	CylindricalTextureCoords();
+	void	PlanarTextureCoords();
+	void	calculateNormal();
 
 public:
 	Model() = delete;

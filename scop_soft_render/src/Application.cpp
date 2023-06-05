@@ -47,8 +47,8 @@ int Application::start(unsigned int window_width, unsigned int window_height, co
 	{
 		return m_pWindow->getResultCode();
 	}
-	m_pShader = new Shader_test(*m_pModel, *m_pTga_image, m_camera);
-	m_pDrawFunction = &Application::draw_model_test;
+	m_pShader = new Shader_only_vertex(*m_pModel, *m_pTga_image, m_camera);
+	m_pDrawFunction = &Application::draw_model_in_line;
 
 	while (!m_pWindow->getIsClosed())
 	{
@@ -78,6 +78,7 @@ int Application::start(unsigned int window_width, unsigned int window_height, co
 				// std::cout << "\t" << i << std::endl;
 				for (int j : {0, 1, 2})
 				{
+					// std::cout << "\t\t" << j << std::endl;
 					m_pShader->vertex(i, j);
 				}
 				(this->*m_pDrawFunction)();
@@ -170,18 +171,16 @@ Vec3f	barycentric(const Vec2f A, const Vec2f B, const Vec2f C, const Vec2f P)
 	return Vec3f({-1,1,1});
 }
 
-void	Application::draw_model_in_simple_triangle_rand_color_barycentric()
+void	Application::draw_model_barycentric_simple()
 {
 	Vec4f* tri = m_pShader->mvpv;
 	Vec4f pts[3] = { tri[0], tri[1], tri[2] };
 	Vec2f pts2[3] = { {(pts[0] / pts[0][3]).x(), (pts[0] / pts[0][3]).y()},
 					{(pts[1] / pts[1][3]).x(), (pts[1] / pts[1][3]).y()},
 					{(pts[2] / pts[2][3]).x(), (pts[2] / pts[2][3]).y()} };
-
 	Vec3f bc0 = barycentric(pts2[0], pts2[1], pts2[2], pts2[0]);
 	Vec3f bc1 = barycentric(pts2[0], pts2[1], pts2[2], pts2[1]);
 	Vec3f bc2 = barycentric(pts2[0], pts2[1], pts2[2], pts2[2]);
-
 	int bboxmin[2] = {static_cast<int>(m_image_resolution - 1), static_cast<int>(m_image_resolution - 1)};
 	int bboxmax[2] = {0, 0};
 	for (int i = 0; i < 3; i++)
@@ -196,6 +195,7 @@ void	Application::draw_model_in_simple_triangle_rand_color_barycentric()
 	{
 		for (int y = std::max(bboxmin[1], 0); y <= std::min(bboxmax[1], static_cast<int>(m_image_resolution - 1)); y++)
 		{
+std::cout << x << "\t" << y << std::endl;
 			float frag_depth = pts[0][2] * bc0.x() + pts[1][2] * bc1.y() + pts[2][2] * bc2.z();
 			if (frag_depth < m_pZbuffer[x + y * m_image_resolution])
 				continue;
@@ -211,7 +211,7 @@ void	Application::draw_model_in_simple_triangle_rand_color_barycentric()
 	}
 }
 
-void	Application::draw_model_test()
+void	Application::draw_model_barycentric_full()
 {
 	Vec4f* clip_verts = m_pShader->mv;
 	Vec4f* tri = m_pShader->mvpv;
@@ -219,7 +219,6 @@ void	Application::draw_model_test()
 	Vec2f pts2[3] = { {pts[0][0]/pts[0][3] , pts[0][1]/pts[0][3]}, \
 						{pts[1][0]/pts[1][3] , pts[1][1]/pts[1][3]},
 						{pts[2][0]/pts[2][3] , pts[2][1]/pts[2][3]}};
-
 	int bboxmin[2] = {static_cast<int>(m_image_resolution - 1), static_cast<int>(m_image_resolution - 1)};
 	int bboxmax[2] = {0, 0};
 	for (int i = 0; i < 3; ++i)
@@ -230,20 +229,28 @@ void	Application::draw_model_test()
 			bboxmax[j] = std::max(bboxmax[j], static_cast<int>(pts2[i][j]));
 		}
 	}
-
+	// m_pShader->fragment();
 	for (int x = std::max(bboxmin[0], 0); x <= std::min(bboxmax[0], static_cast<int>(m_image_resolution - 1)); ++x)
 	{
 		for (int y = std::max(bboxmin[1], 0); y <= std::min(bboxmax[1], static_cast<int>(m_image_resolution - 1)); ++y)
 		{
+// std::cout << x << "\t" << y << std::endl;
 			Vec3f bc_screen = barycentric(pts2[0], pts2[1], pts2[2], {static_cast<float>(x), static_cast<float>(y)});
+// std::cout << "000" << std::endl;
 			if (bc_screen.x() < 0 || bc_screen.y() < 0 || bc_screen.z() < 0)
 				continue;
+// std::cout << "111" << std::endl;
 			Vec3f bc_clip   = {bc_screen.x() / pts[0][3], bc_screen.y() / pts[1][3], bc_screen.z() / pts[2][3]};
+// std::cout << "222" << std::endl;
 			bc_clip = bc_clip / (bc_clip.x() + bc_clip.y() + bc_clip.z());
+// std::cout << "333" << std::endl;
 			float frag_depth = Vec3f({clip_verts[0][2], clip_verts[1][2], clip_verts[2][2]}) * bc_clip;
+// std::cout << "444" << std::endl;
 			if (frag_depth > m_pZbuffer[x + y * m_image_resolution])
 				continue;
+// std::cout << "555" << std::endl;
 			m_pShader->fragment(bc_clip);
+// std::cout << "666" << std::endl;
 			m_pZbuffer[x + y * m_image_resolution] = frag_depth;
 			memcpy(m_pImage + (y * m_image_resolution + x) * m_bytespp, m_pShader->color, m_bytespp);
 		}
