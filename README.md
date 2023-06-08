@@ -11,7 +11,7 @@ Basic GPU rendering with OpenGL
 - using only glfw (for output image as texture)
 ```
 Commands:
-- active rot:	space
+- active rot:		space
 - mode:			1-6
 	- point
 	- line
@@ -19,7 +19,7 @@ Commands:
 	- texture
 	- light
 	- light + texture
-- change proj:	tab
+- change proj:		tab
 - rotate:		w-s, a-d, q-w
 - move:			t-g, f-h, r-y
 - scale:		+ -
