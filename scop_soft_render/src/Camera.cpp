@@ -116,7 +116,10 @@ namespace Scop
 
 	void			Camera::set_model_scale(const float scale)
 	{
-		m_model_scale = scale;
+		if (scale < 0)
+			m_model_scale = 0;
+		else
+			m_model_scale = scale;
 		m_update_model_matrix = true;
 		m_update_mvpv_matrix = true;
 	}
