@@ -47,6 +47,7 @@ int	Model::init_model()
 	while (!file.eof())
 	{
 		std::getline(file, line);
+		// std::cout << line << std::endl;
 		std::istringstream iss(line.c_str());
 		char trash;
 		if (!line.compare(0, 2, "v "))
@@ -132,7 +133,7 @@ int	Model::init_model()
 		}
 	}
 	file.close();
-	
+
 	return optimization_model();
 }
 
@@ -165,14 +166,29 @@ int	Model::optimization_model()
 
 	if (m_vt.empty())
 	{
-		m_f_vt = m_f_v;
-		SphericalTextureCoords();
+		if (m_f_vt.empty())
+		{
+			m_f_vt = m_f_v;
+			SphericalTextureCoords();
+		}
+		else
+		{
+			for (auto &c : m_v)
+			m_vt.push_back(Vec2f({c.x(), c.y()}));
+		}
 	}
 
 	if (m_vn.empty())
 	{
-		m_f_vn = m_f_v;
-		calculateNormal();
+		if (m_f_vn.empty())
+		{
+			m_f_vn = m_f_v;
+			calculateNormal();
+		}
+		else
+		{
+			m_vn = m_v;
+		}
 	}
 	return 0;
 }

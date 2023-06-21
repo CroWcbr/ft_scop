@@ -125,8 +125,6 @@ namespace Scop
 			else if (intensity>.30) intensity = .45;
 			else if (intensity>.15) intensity = .30;
 			else intensity = 0;
-			// if (intensity < 0) intensity = 0;
-			// if (intensity > 1) intensity = 1;
 			for (int i = 0; i < 3; i++)
 				color[i] = 255 * intensity;
 		}

@@ -161,18 +161,12 @@ int main(int argc, char **argv)
 	else if (argc == 2)
 	{
 		path_model_obj = argv[1];
-		path_texture_tga = "../blender/cat.tga";
+		path_texture_tga = "./blender/cat.tga";
 	}
 	else if (argc == 1)
 	{
-		// path_model_obj = "../blender/african_head/african_head.obj";
-		path_model_obj = "../blender/teapot.obj";
-		// path_model_obj = "../blender/42.obj";
-		// path_model_obj = "../blender/test.obj";
-
-		// path_texture_tga = "../blender/african_head/african_head_diffuse.tga";
-		path_texture_tga = "../blender/cat.tga";
-		// path_texture_tga = "../blender/output2.tga";
+		path_model_obj = "./blender/teapot.obj";
+		path_texture_tga = "./blender/cat.tga";
 	}
 	else
 	{
@@ -181,7 +175,7 @@ int main(int argc, char **argv)
 	}
 
 	ApplicationEditor*	scop = new ApplicationEditor();
-	int returnCode = scop->start(400, 400, "test", path_model_obj, path_texture_tga);
+	int returnCode = scop->start(800, 800, "test", path_model_obj, path_texture_tga);
 	delete scop;
 
 	return returnCode;
