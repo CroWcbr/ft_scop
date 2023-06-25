@@ -23,9 +23,9 @@ namespace Scop
 				, isClosed(false)
 				{}
 		};
+		std::string			m_title;
 		WindowData			m_data;
 		GLFWwindow*			m_pWindow = nullptr;
-		std::string			m_title;
 		unsigned int		textureID;
 		int					m_resultCode;
 
@@ -42,10 +42,10 @@ namespace Scop
 		Window& operator=(const Window&) = delete;
 		Window& operator=(const Window&&) = delete;
 
-		const void			on_update(const unsigned char* image, const unsigned int image_resolution) const;
-		inline const int	getResultCode() const { return m_resultCode; }
-		inline const int	getResolution() const { return m_data.resolution; }
-		inline const bool	getIsClosed() const { return m_data.isClosed; }
+		void				on_update(const unsigned char* image, const unsigned int image_resolution) const;
+		inline int			getResultCode() const { return m_resultCode; }
+		inline int			getResolution() const { return m_data.resolution; }
+		inline bool			getIsClosed() const { return m_data.isClosed; }
 	};
 
 }

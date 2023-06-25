@@ -105,6 +105,9 @@ void	Window::init_callback()
 	glfwSetKeyCallback(m_pWindow,
 		[](GLFWwindow* pWindow, int key, int scancode, int action, int mods)
 		{
+			(void)pWindow;
+			(void)scancode;
+			(void)mods;
 			if (key < 0)
 			{
 				std::cout << "unknown key " << key << std::endl;
@@ -135,8 +138,10 @@ void	Window::init_callback()
 	);
 }
 
-const void	Window::on_update(const unsigned char* image, const unsigned int image_resolution) const
+void	Window::on_update(const unsigned char* image, const unsigned int image_resolution) const
 {
+	(void)image;
+	(void)image_resolution;
 	// glClearColor(0.f, 0.f, 0.f, 0.f);
 	// glClear(GL_COLOR_BUFFER_BIT);
 

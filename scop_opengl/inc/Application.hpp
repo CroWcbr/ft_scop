@@ -9,26 +9,21 @@ namespace Scop
 
 	class Application
 	{
+	public:
+		int						m_mode = 0;
 	protected:
 		struct Window*			m_pWindow = nullptr;
 		Model*					m_pModel = nullptr;
 		TGAimage*				m_pTga_image = nullptr;
 		class ShaderProgram*	m_pShader = nullptr;
-
-	protected:
-		int						m_mode = 0;
-
-
-
-		unsigned char*		m_pImage = nullptr;
-
-		unsigned int		m_image_resolution = 0;	//Texture a multiple of 100
+		unsigned char*			m_pImage = nullptr;
+		unsigned int			m_image_resolution = 0;	//Texture a multiple of 100
 
 		virtual void		on_update() {};
 
 	public:
 		Application();
-		~Application();
+		virtual ~Application();
 
 		Application(const Application&) = delete;
 		Application(Application&&) = delete;

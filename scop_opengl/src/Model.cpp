@@ -39,7 +39,6 @@ int	Model::init_model()
 		return 1;
 	}
 	float max_v = 0;
-	float max_f = 0;
 	std::string line;
 	std::vector<std::vector<std::string>> f_tmp;
 	while (!file.eof())

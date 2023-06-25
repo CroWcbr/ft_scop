@@ -1,7 +1,7 @@
 NAME		=	scop
 
 CC			=	g++ -std=c++17
-CFLAGS		=	#-Wall -Werror -Wextra
+CFLAGS		=	-Wall -Werror -Wextra
 
 DRAW_FLAG	=	-lm -lglfw -lGL -ldl
 GLFW_LIB	=	../external/glfw

@@ -57,8 +57,8 @@ public:
 	~TGAimage();
 
 	const unsigned char*	getTGAimage() const { return tga_image; }
-	const int				getResultCode() const { return m_resultCode; }
-	const int				getWidth() const { return m_width; }
-	const int				getHeight() const { return m_height; }
-	const int				getBytespp() const { return m_bytespp; }
+	int						getResultCode() const { return m_resultCode; }
+	int						getWidth() const { return m_width; }
+	int						getHeight() const { return m_height; }
+	int						getBytespp() const { return m_bytespp; }
 };

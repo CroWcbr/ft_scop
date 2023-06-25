@@ -26,9 +26,7 @@ namespace Scop
 	
 		void				bind() const;
 		static void			unbind();
-		inline const int	getResultCode() const { return m_resultCode; }
-
-		// void				setMatrix4(const char* name, const Mat4& matrix) const;
+		inline int			getResultCode() const { return m_resultCode; }
 	};
 
 }
