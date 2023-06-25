@@ -153,7 +153,7 @@ namespace ft
 			Vector				operator-() const 
 			{
 				Vector result(*this);
-				for (int i = 0; i < N; ++i)
+				for (size_t i = 0; i < N; ++i)
 				{
 					result[i] = -m_data[i];
 				}
@@ -163,7 +163,7 @@ namespace ft
 			Vector<N, float>	operator*(float d) const
 			{
 				Vector<N, float> result(*this);
-				for (int i = 0; i < N; ++i)
+				for (size_t i = 0; i < N; ++i)
 				{
 					result[i] = result[i] * d;
 				}
@@ -174,7 +174,7 @@ namespace ft
 			{
 				ASSERT_VEC(d != 0, "wrong use operator/ - zero division");
 				Vector<N, float> result(*this);
-				for (int i = 0; i < N; ++i)
+				for (size_t i = 0; i < N; ++i)
 				{
 					result[i] = result[i] / d;
 				}

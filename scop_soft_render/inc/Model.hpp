@@ -34,7 +34,7 @@ public:
 	Model(const char* filename);
 	~Model();
 
-	const int									getResultCode() const { return m_resultCode; }
+	int											getResultCode() const { return m_resultCode; }
 	const std::vector<Vec3f>&					get_v() const { return m_v; }
 	const std::vector<Vec2f>&					get_vt() const { return m_vt; }
 	const std::vector<Vec3f>&					get_vn() const { return m_vn; }

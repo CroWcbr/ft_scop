@@ -38,6 +38,7 @@ Window::Window(std::string title, const unsigned int width, const unsigned int h
 
 Window::~Window()
 {
+	glfwDestroyWindow(m_pWindow);
 	glfwTerminate();
 }
 
@@ -103,6 +104,8 @@ void	Window::init_callback()
 	glfwSetKeyCallback(m_pWindow,
 		[](GLFWwindow* pWindow, int key, int scancode, int action, int mods)
 		{
+			(void)scancode;
+			(void)mods;
 			if (key < 0)
 			{
 				std::cout << "unknown key " << key << std::endl;
@@ -139,7 +142,7 @@ void	Window::init_callback()
 	);
 }
 
-const void	Window::on_update(const unsigned char* image, const unsigned int image_resolution) const
+void	Window::on_update(const unsigned char* image, const unsigned int image_resolution) const
 {
 	glClearColor(0.f, 0.f, 0.f, 0.f);
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -159,7 +162,7 @@ const void	Window::on_update(const unsigned char* image, const unsigned int imag
 	glfwSwapBuffers(m_pWindow);
 }
 
-const void	Window::event() const
+void	Window::event() const
 {
 	glfwPollEvents();
 }

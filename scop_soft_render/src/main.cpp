@@ -18,36 +18,42 @@ class ApplicationEditor : public Scop::Application
 			if (Scop::Input::IsKeyPressed(Scop::KeyCode::KEY_1))
 			{
 				// std::cout << "Application KEY_1" << std::endl;
+				delete m_pShader;
 				m_pShader = new Scop::Shader_only_vertex(*m_pModel, *m_pTga_image, m_camera);
 				m_pDrawFunction = &Application::draw_model_in_point;
 			}
 			if (Scop::Input::IsKeyPressed(Scop::KeyCode::KEY_2))
 			{
 				// std::cout << "Application KEY_2" << std::endl;
+				delete m_pShader;
 				m_pShader = new Scop::Shader_only_vertex(*m_pModel, *m_pTga_image, m_camera);
 				m_pDrawFunction = &Application::draw_model_in_line;
 			}
 			if (Scop::Input::IsKeyPressed(Scop::KeyCode::KEY_3))
 			{
 				// std::cout << "Application KEY_3" << std::endl;
+				delete m_pShader;
 				m_pShader = new Scop::Shader_rand_color(*m_pModel, *m_pTga_image, m_camera);
 				m_pDrawFunction = &Application::draw_model_barycentric_simple;
 			}
 			if (Scop::Input::IsKeyPressed(Scop::KeyCode::KEY_4))
 			{
 				// std::cout << "Application KEY_4" << std::endl;
+				delete m_pShader;
 				m_pShader = new Scop::Shader_texture(*m_pModel, *m_pTga_image, m_camera);
 				m_pDrawFunction = &Application::draw_model_barycentric_full;
 			}
 			if (Scop::Input::IsKeyPressed(Scop::KeyCode::KEY_5))
 			{
 				// std::cout << "Application KEY_5" << std::endl;
+				delete m_pShader;
 				m_pShader = new Scop::Shader_intensity(*m_pModel, *m_pTga_image, m_camera);
 				m_pDrawFunction = &Application::draw_model_barycentric_full;
 			}
 			if (Scop::Input::IsKeyPressed(Scop::KeyCode::KEY_6))
 			{
 				// std::cout << "Application KEY_6" << std::endl;
+				delete m_pShader;
 				m_pShader = new Scop::Shader_texture_intensity(*m_pModel, *m_pTga_image, m_camera);
 				m_pDrawFunction = &Application::draw_model_barycentric_full;
 			}

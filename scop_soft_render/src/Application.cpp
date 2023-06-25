@@ -25,8 +25,9 @@ Application::~Application()
 {
 	delete m_pModel;
 	delete m_pTga_image;
-	delete m_pImage;
-	delete m_pZbuffer;
+	delete m_pShader;
+	delete [] m_pImage;
+	delete [] m_pZbuffer;
 	delete m_pWindow;
 }
 
@@ -72,8 +73,8 @@ int Application::start(unsigned int window_width, unsigned int window_height, co
 
 		if (m_image_resolution != m_pWindow->getResolution())
 		{
-			delete m_pImage;
-			delete m_pZbuffer;
+			delete [] m_pImage;
+			delete [] m_pZbuffer;
 			m_image_resolution = m_pWindow->getResolution();
 			m_image_size = m_image_resolution * m_image_resolution * m_bytespp;
 			m_pImage = new unsigned char[m_image_size];
@@ -122,7 +123,7 @@ void	Application::draw_model_in_point()
 
 void	Application::point(int x, int y, const unsigned char* color)
 {
-	if (x < 0 || y < 0 || x >= m_image_resolution || y >= m_image_resolution)
+	if (x < 0 || y < 0 || x >= static_cast<int>(m_image_resolution) || y >= static_cast<int>(m_image_resolution))
 		return;
 	memcpy(m_pImage + static_cast<int>(y * m_image_resolution + x) * m_bytespp, color, m_bytespp);
 }
@@ -144,9 +145,9 @@ void	Application::draw_model_in_line()
 void	Application::line(int x0, int y0, int x1, int y1, const unsigned char* color)
 {
 	if ((x0 < 0 && x1 < 0) || \
-		(x0 >= m_image_resolution && x1 >= m_image_resolution) || \
+		(x0 >= static_cast<int>(m_image_resolution) && x1 >= static_cast<int>(m_image_resolution)) || \
 		(y0 < 0 && y1 < 0) || \
-		(y0 >= m_image_resolution && y1 >= m_image_resolution))
+		(y0 >= static_cast<int>(m_image_resolution) && y1 >=static_cast<int>(m_image_resolution)))
 		return;
 
 	int dx = std::abs(x1 - x0);
@@ -168,7 +169,7 @@ void	Application::line(int x0, int y0, int x1, int y1, const unsigned char* colo
 			err += dx;
 			y0 += sy;
 		}
-		if (x0 < 0 || y0 < 0 || x0 >= m_image_resolution || y0 >= m_image_resolution)
+		if (x0 < 0 || y0 < 0 || x0 >= static_cast<int>(m_image_resolution) || y0 >= static_cast<int>(m_image_resolution))
 			continue;
 		memcpy(m_pImage + (y0 * m_image_resolution + x0) * m_bytespp, color, m_bytespp);
 	}

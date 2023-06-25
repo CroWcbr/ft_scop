@@ -49,7 +49,9 @@ namespace Scop
 		}
 
 		virtual void fragment(Vec3f bar = {0,0,0})
-		{}
+		{
+			(void)bar;
+		}
 	};
 
 	struct Shader_rand_color: public IShader
@@ -66,6 +68,7 @@ namespace Scop
 
 		virtual void fragment(Vec3f bar = {0,0,0})
 		{
+			(void)bar;
 			color[0] = rand() % 255;
 			color[1] = rand() % 255;
 			color[2] = rand() % 255;

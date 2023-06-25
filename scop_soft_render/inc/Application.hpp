@@ -41,7 +41,7 @@ namespace Scop
 
 	public:
 		Application();
-		~Application();
+		virtual ~Application();
 
 		Application(const Application&) = delete;
 		Application(Application&&) = delete;

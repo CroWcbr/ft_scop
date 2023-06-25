@@ -186,7 +186,7 @@ void TGAimage::flip_color()
 	if (m_bytespp == 3)
 	{
 		unsigned char tmp;
-		for (int i = 0; i < nbytes; i += 3)
+		for (unsigned long i = 0; i < nbytes; i += 3)
 		{
 			tmp = tga_image[i];
 			tga_image[i] = tga_image[i + 2];
@@ -196,7 +196,7 @@ void TGAimage::flip_color()
 	else if (m_bytespp == 4)
 	{
 		unsigned char tmp;
-		for (int i = 0; i < nbytes; i += 4)
+		for (unsigned long i = 0; i < nbytes; i += 4)
 		{
 			tmp = tga_image[i];
 			tga_image[i] = tga_image[i + 3];
