@@ -18,6 +18,7 @@ public:
 private:
 	int		init_model();
 	int		optimization_model();
+	int		check_error_model();
 
 	void	SphericalTextureCoords();
 	void	CylindricalTextureCoords();

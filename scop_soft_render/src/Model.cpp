@@ -10,7 +10,14 @@
 Model::Model(const char* filename)
 	: m_filename(filename)
 {
-	m_resultCode = init_model();
+	try
+	{
+		m_resultCode = init_model();
+	}
+	catch(...)
+	{
+		m_resultCode = -1;
+	}
 
 	std::cout << "model file:\t";
 	std::cout << (strrchr(filename, '/') ? strrchr(filename, '/') + 1 : filename) << std::endl;
@@ -134,7 +141,56 @@ int	Model::init_model()
 	}
 	file.close();
 
+	if (check_error_model())
+		return 1;
+
 	return optimization_model();
+}
+
+int find_max(std::vector<std::vector<int> > tmp)
+{
+	int max = 0;
+
+	for (const auto& f : tmp)
+	{
+		for (const auto& ff : f)
+		{
+			if (ff < 0)
+				return -1;
+			if (ff > max)
+				max = ff;
+		}
+	}
+	return max;
+}
+
+int Model::check_error_model()
+{
+	int max_check;
+
+	max_check = find_max(m_f_v);
+	if (max_check == -1 || static_cast<size_t>(max_check) > m_v.size())
+		return 1;
+
+	if (!m_f_vt.empty())
+	{
+		max_check = find_max(m_f_vt);
+	}
+	if (max_check == -1 || static_cast<size_t>(max_check) > (m_f_vt.empty() ? m_v.size() : m_vt.size()))
+		return 1;
+
+	if (!m_f_vn.empty())
+	{
+		max_check = find_max(m_f_vn);
+	}
+	else
+	{
+		max_check = find_max(m_f_v);
+	}
+	if (max_check == -1 || static_cast<size_t>(max_check) > (m_f_vn.empty() ? m_v.size() : m_vn.size()))
+		return 1;
+	
+	return 0;
 }
 
 int	Model::optimization_model()
@@ -190,6 +246,11 @@ int	Model::optimization_model()
 			m_vn = m_v;
 		}
 	}
+	std::cout << m_f_v.size() << std::endl;
+		std::cout << m_f_vt.size() << std::endl;
+			std::cout << m_f_vn.size() << std::endl;
+	if (!(m_f_v.size() == m_f_vt.size() && m_f_v.size() == m_f_vn.size()))
+		return 3;
 	return 0;
 }
 
